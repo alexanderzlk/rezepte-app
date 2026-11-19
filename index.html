@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#111315" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1d21'/%3E%3Cpath d='M20 14v16m6-16v16m-3-16v36M42 14c0 9-4 13-4 13v23' stroke='%233b82f6' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+  <meta name="theme-color" content="#0f1115" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <title>Rezepte &amp; Essensplan</title>
   <style>
     :root {
@@ -60,7 +62,6 @@
     .topbar-title {
       font-size: 18px;
       font-weight: 700;
-      letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -73,13 +74,8 @@
       padding: 14px 16px;
     }
 
-    .view {
-      display: none;
-    }
-
-    .view.active {
-      display: block;
-    }
+    .view { display: none; }
+    .view.active { display: block; }
 
     .card {
       background: var(--surface);
@@ -125,9 +121,7 @@
       background: var(--surface-2);
     }
 
-    input {
-      width: 100%;
-    }
+    input { width: 100%; }
 
     input.num-input {
       width: 88px;
@@ -157,9 +151,7 @@
       color: #fff;
     }
 
-    .btn-primary:hover:not(:disabled) {
-      background: var(--accent-hover);
-    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
 
     .btn-ghost {
       min-height: 38px;
@@ -188,7 +180,6 @@
     .status.ok { color: var(--ok); }
     .status.err { color: #f87171; }
 
-    /* Essensplan-Karten */
     .day-card {
       background: var(--surface-2);
       border: 1px solid var(--border);
@@ -197,9 +188,7 @@
       margin-bottom: 10px;
     }
 
-    .day-card.today {
-      border-color: var(--accent);
-    }
+    .day-card.today { border-color: var(--accent); }
 
     .day-date {
       font-size: 14px;
@@ -208,9 +197,7 @@
       margin-bottom: 8px;
     }
 
-    .day-card.today .day-date {
-      color: #93c5fd;
-    }
+    .day-card.today .day-date { color: #93c5fd; }
 
     .empty-day {
       font-size: 14px;
@@ -250,7 +237,6 @@
       color: #fca5a5;
     }
 
-    /* Rezepte-Karten */
     .recipe-card {
       background: var(--surface-2);
       border: 1px solid var(--border);
@@ -260,9 +246,7 @@
       cursor: pointer;
     }
 
-    .recipe-card:hover {
-      border-color: var(--accent);
-    }
+    .recipe-card:hover { border-color: var(--accent); }
 
     .recipe-name {
       font-size: 16px;
@@ -275,7 +259,6 @@
       margin-top: 4px;
     }
 
-    /* Rezept-Detail */
     .detail-box {
       background: var(--surface-2);
       border: 1px solid var(--border);
@@ -287,7 +270,6 @@
       margin: 6px 0 12px 0;
     }
 
-    /* Untere App-Navigation */
     .bottom-nav {
       position: fixed;
       left: 0;
@@ -319,59 +301,37 @@
       background: rgba(59, 130, 246, 0.12);
     }
 
-    /* Desktop-Anpassung */
     @media (min-width: 768px) {
-      body {
-        padding-bottom: 24px;
-      }
-
-      .bottom-nav {
-        display: none;
-      }
-
-      .desktop-tabs {
-        display: flex;
-        gap: 8px;
-      }
-
+      body { padding-bottom: 24px; }
+      .bottom-nav { display: none; }
+      .desktop-tabs { display: flex; gap: 8px; }
       .tab-btn {
         min-height: 38px;
         padding: 6px 14px;
         font-size: 14px;
         background: var(--surface-2);
       }
-
       .tab-btn.active {
         background: var(--accent);
         border-color: var(--accent);
         color: #fff;
       }
-
       .plan-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 10px;
       }
-
-      .plan-grid .day-card {
-        margin-bottom: 0;
-      }
-
+      .plan-grid .day-card { margin-bottom: 0; }
       .recipe-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
       }
-
-      .recipe-grid .recipe-card {
-        margin-bottom: 0;
-      }
+      .recipe-grid .recipe-card { margin-bottom: 0; }
     }
 
     @media (max-width: 767px) {
-      .desktop-tabs {
-        display: none;
-      }
+      .desktop-tabs { display: none; }
     }
   </style>
 </head>
@@ -389,7 +349,6 @@
   <main class="container">
     <div id="statusBar" class="status"></div>
 
-    <!-- Ansicht 1: Essensplan -->
     <section id="planView" class="view active">
       <div class="card">
         <h2 class="card-heading">Essensplan (nächste 14 Tage)</h2>
@@ -397,7 +356,6 @@
       </div>
     </section>
 
-    <!-- Ansicht 2: Rezepte & Detail -->
     <section id="recipesView" class="view">
       <div id="detailCard" class="card" style="display:none;">
         <div class="row-split" style="justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -439,7 +397,6 @@
       </div>
     </section>
 
-    <!-- Ansicht 3: Neues Rezept -->
     <section id="addView" class="view">
       <div class="card">
         <h2 class="card-heading">Neues Rezept per Link</h2>
@@ -459,20 +416,22 @@
   </main>
 
   <nav class="bottom-nav">
-    <button type="button" class="nav-btn active" data-view="planView">
-      <span>Plan</span>
-    </button>
-    <button type="button" class="nav-btn" data-view="recipesView">
-      <span>Rezepte</span>
-    </button>
-    <button type="button" class="nav-btn" data-view="addView">
-      <span>+ Neu</span>
-    </button>
+    <button type="button" class="nav-btn active" data-view="planView"><span>Plan</span></button>
+    <button type="button" class="nav-btn" data-view="recipesView"><span>Rezepte</span></button>
+    <button type="button" class="nav-btn" data-view="addView"><span>+ Neu</span></button>
   </nav>
 
   <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyI8ZYz6yJe2Ubay1enh2lAbuQkS8f78T7vE7ZnXrm3yYLjgE1QNyjBV_Zu3aW7sIE/exec';
+
     let state = { recipes: [], plan: [] };
     let selectedRecipeId = null;
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
 
     function setStatus(msg, type = '') {
       const el = document.getElementById('statusBar');
@@ -485,6 +444,25 @@
       document.getElementById('refreshBtn').disabled = busy;
       document.getElementById('planSaveBtn').disabled = busy;
       document.getElementById('deleteBtn').disabled = busy;
+    }
+
+    async function apiGetData() {
+      const sep = API_URL.indexOf('?') === -1 ? '?' : '&';
+      const res = await fetch(`${API_URL}${sep}action=getData`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    }
+
+    async function apiPostAction(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || 'Aktion fehlgeschlagen.');
+      return json.data;
     }
 
     function switchView(viewId) {
@@ -559,21 +537,18 @@
             del.type = 'button';
             del.className = 'meal-del';
             del.textContent = '×';
-            del.addEventListener('click', ev => {
+            del.addEventListener('click', async ev => {
               ev.stopPropagation();
               setBusy(true);
-              google.script.run
-                .withSuccessHandler(data => {
-                  state = data;
-                  renderPlan();
-                  setBusy(false);
-                  setStatus('Eintrag entfernt.', 'ok');
-                })
-                .withFailureHandler(err => {
-                  setBusy(false);
-                  setStatus(err.message || 'Fehler.', 'err');
-                })
-                .removePlanEntry(p.planId);
+              try {
+                state = await apiPostAction({ action: 'removePlan', planId: p.planId });
+                renderPlan();
+                setStatus('Eintrag entfernt.', 'ok');
+              } catch (err) {
+                setStatus(err.message || 'Fehler.', 'err');
+              } finally {
+                setBusy(false);
+              }
             });
 
             row.appendChild(title);
@@ -634,32 +609,29 @@
       }
     }
 
-    function loadData() {
+    async function loadData() {
       setBusy(true);
       setStatus('Lade Daten...');
-      google.script.run
-        .withSuccessHandler(data => {
-          state = data || { recipes: [], plan: [] };
-          renderPlan();
-          renderRecipes();
-          if (selectedRecipeId && state.recipes.some(r => r.id === selectedRecipeId)) {
-            openRecipe(selectedRecipeId);
-          } else {
-            document.getElementById('detailCard').style.display = 'none';
-          }
-          setBusy(false);
-          setStatus('Bereit.', 'ok');
-        })
-        .withFailureHandler(err => {
-          setBusy(false);
-          setStatus(err.message || 'Fehler beim Laden.', 'err');
-        })
-        .getAppData();
+      try {
+        state = (await apiGetData()) || { recipes: [], plan: [] };
+        renderPlan();
+        renderRecipes();
+        if (selectedRecipeId && state.recipes.some(r => r.id === selectedRecipeId)) {
+          openRecipe(selectedRecipeId);
+        } else {
+          document.getElementById('detailCard').style.display = 'none';
+        }
+        setStatus('Bereit.', 'ok');
+      } catch (err) {
+        setStatus(err.message || 'Fehler beim Laden.', 'err');
+      } finally {
+        setBusy(false);
+      }
     }
 
     document.getElementById('refreshBtn').addEventListener('click', loadData);
 
-    document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('addBtn').addEventListener('click', async () => {
       const url = document.getElementById('recipeUrl').value.trim();
       const servings = document.getElementById('recipeServings').value;
       if (!url) {
@@ -669,64 +641,60 @@
 
       setBusy(true);
       setStatus('Analysiere Rezept...');
-      google.script.run
-        .withSuccessHandler(data => {
-          state = data;
-          document.getElementById('recipeUrl').value = '';
-          renderPlan();
-          renderRecipes();
-          setBusy(false);
-          setStatus('Rezept gespeichert.', 'ok');
-          switchView('recipesView');
-        })
-        .withFailureHandler(err => {
-          setBusy(false);
-          setStatus(err.message || 'Fehler beim Analysieren.', 'err');
-        })
-        .addRecipeFromUrl(url, servings);
+      try {
+        state = await apiPostAction({ action: 'addRecipe', url, servings });
+        document.getElementById('recipeUrl').value = '';
+        renderPlan();
+        renderRecipes();
+        setStatus('Rezept gespeichert.', 'ok');
+        switchView('recipesView');
+      } catch (err) {
+        setStatus(err.message || 'Fehler beim Analysieren.', 'err');
+      } finally {
+        setBusy(false);
+      }
     });
 
-    document.getElementById('planSaveBtn').addEventListener('click', () => {
+    document.getElementById('planSaveBtn').addEventListener('click', async () => {
       if (!selectedRecipeId) return;
       const dateStr = document.getElementById('planDate').value;
       const servings = document.getElementById('planServings').value;
 
       setBusy(true);
-      google.script.run
-        .withSuccessHandler(data => {
-          state = data;
-          renderPlan();
-          renderRecipes();
-          openRecipe(selectedRecipeId);
-          setBusy(false);
-          setStatus('Im Essensplan eingetragen.', 'ok');
-          switchView('planView');
-        })
-        .withFailureHandler(err => {
-          setBusy(false);
-          setStatus(err.message || 'Fehler beim Planen.', 'err');
-        })
-        .planRecipeForDate(selectedRecipeId, dateStr, servings);
+      try {
+        state = await apiPostAction({
+          action: 'planRecipe',
+          recipeId: selectedRecipeId,
+          dateStr,
+          servings
+        });
+        renderPlan();
+        renderRecipes();
+        openRecipe(selectedRecipeId);
+        setStatus('Im Essensplan eingetragen.', 'ok');
+        switchView('planView');
+      } catch (err) {
+        setStatus(err.message || 'Fehler beim Planen.', 'err');
+      } finally {
+        setBusy(false);
+      }
     });
 
-    document.getElementById('deleteBtn').addEventListener('click', () => {
+    document.getElementById('deleteBtn').addEventListener('click', async () => {
       if (!selectedRecipeId) return;
       setBusy(true);
-      google.script.run
-        .withSuccessHandler(data => {
-          state = data;
-          selectedRecipeId = null;
-          document.getElementById('detailCard').style.display = 'none';
-          renderPlan();
-          renderRecipes();
-          setBusy(false);
-          setStatus('Rezept gelöscht.', 'ok');
-        })
-        .withFailureHandler(err => {
-          setBusy(false);
-          setStatus(err.message || 'Fehler beim Löschen.', 'err');
-        })
-        .deleteRecipe(selectedRecipeId);
+      try {
+        state = await apiPostAction({ action: 'deleteRecipe', recipeId: selectedRecipeId });
+        selectedRecipeId = null;
+        document.getElementById('detailCard').style.display = 'none';
+        renderPlan();
+        renderRecipes();
+        setStatus('Rezept gelöscht.', 'ok');
+      } catch (err) {
+        setStatus(err.message || 'Fehler beim Löschen.', 'err');
+      } finally {
+        setBusy(false);
+      }
     });
 
     window.addEventListener('DOMContentLoaded', loadData);
