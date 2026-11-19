@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111315" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1d21'/%3E%3Cpath d='M20 14v16m6-16v16m-3-16v36M42 14c0 9-4 13-4 13v23' stroke='%233b82f6' stroke-width='4' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E" />
+  <title>Rezepte &amp; Essensplan</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --surface: #171a21;
+      --surface-2: #1f242d;
+      --border: #2c3340;
+      --text: #f4f6f8;
+      --muted: #9aa4b2;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --danger: #ef4444;
+      --ok: #22c55e;
+      --nav-h: 64px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    body {
+      padding-bottom: calc(var(--nav-h) + 20px);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(15, 17, 21, 0.94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 14px 16px;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .card-heading {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .row-split {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    input, button {
+      font-family: inherit;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      min-height: 46px;
+      padding: 10px 12px;
+      color: var(--text);
+      background: var(--surface-2);
+    }
+
+    input {
+      width: 100%;
+    }
+
+    input.num-input {
+      width: 88px;
+      min-width: 88px;
+      text-align: center;
+    }
+
+    button {
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      touch-action: manipulation;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-ghost {
+      min-height: 38px;
+      padding: 6px 12px;
+      font-size: 14px;
+      background: var(--surface-2);
+    }
+
+    .btn-danger {
+      min-height: 38px;
+      padding: 6px 12px;
+      font-size: 14px;
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--muted);
+      min-height: 20px;
+      word-break: break-word;
+    }
+
+    .status.ok { color: var(--ok); }
+    .status.err { color: #f87171; }
+
+    /* Essensplan-Karten */
+    .day-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .day-card.today {
+      border-color: var(--accent);
+    }
+
+    .day-date {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .day-card.today .day-date {
+      color: #93c5fd;
+    }
+
+    .empty-day {
+      font-size: 14px;
+      color: var(--muted);
+      opacity: 0.7;
+    }
+
+    .meal-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(59, 130, 246, 0.16);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-top: 6px;
+    }
+
+    .meal-title {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .meal-del {
+      width: 34px;
+      min-width: 34px;
+      height: 34px;
+      min-height: 34px;
+      padding: 0;
+      font-size: 18px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.28);
+      border-color: rgba(252, 165, 165, 0.45);
+      color: #fca5a5;
+    }
+
+    /* Rezepte-Karten */
+    .recipe-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .recipe-card:hover {
+      border-color: var(--accent);
+    }
+
+    .recipe-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .recipe-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Rezept-Detail */
+    .detail-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      white-space: pre-wrap;
+      font-family: inherit;
+      font-size: 15px;
+      margin: 6px 0 12px 0;
+    }
+
+    /* Untere App-Navigation */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--nav-h);
+      z-index: 30;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .nav-btn {
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      min-height: var(--nav-h);
+      padding: 6px 4px;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nav-btn.active {
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.12);
+    }
+
+    /* Desktop-Anpassung */
+    @media (min-width: 768px) {
+      body {
+        padding-bottom: 24px;
+      }
+
+      .bottom-nav {
+        display: none;
+      }
+
+      .desktop-tabs {
+        display: flex;
+        gap: 8px;
+      }
+
+      .tab-btn {
+        min-height: 38px;
+        padding: 6px 14px;
+        font-size: 14px;
+        background: var(--surface-2);
+      }
+
+      .tab-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      .plan-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .plan-grid .day-card {
+        margin-bottom: 0;
+      }
+
+      .recipe-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .recipe-grid .recipe-card {
+        margin-bottom: 0;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .desktop-tabs {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-title">Rezepte &amp; Plan</div>
+    <div class="desktop-tabs">
+      <button type="button" class="tab-btn active" data-view="planView">Essensplan</button>
+      <button type="button" class="tab-btn" data-view="recipesView">Rezepte</button>
+      <button type="button" class="tab-btn" data-view="addView">+ Rezept</button>
+    </div>
+    <button type="button" id="refreshBtn" class="btn-ghost">Neu laden</button>
+  </header>
+
+  <main class="container">
+    <div id="statusBar" class="status"></div>
+
+    <!-- Ansicht 1: Essensplan -->
+    <section id="planView" class="view active">
+      <div class="card">
+        <h2 class="card-heading">Essensplan (nächste 14 Tage)</h2>
+        <div id="planList" class="plan-grid"></div>
+      </div>
+    </section>
+
+    <!-- Ansicht 2: Rezepte & Detail -->
+    <section id="recipesView" class="view">
+      <div id="detailCard" class="card" style="display:none;">
+        <div class="row-split" style="justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <h2 id="detailTitle" class="card-heading" style="margin-bottom:4px;"></h2>
+            <div id="detailMeta" class="recipe-sub"></div>
+          </div>
+          <button type="button" id="deleteBtn" class="btn-danger">Löschen</button>
+        </div>
+
+        <div class="stack" style="margin-top:12px;">
+          <div class="row-split">
+            <div style="flex:1;">
+              <label for="planDate">Datum</label>
+              <input type="date" id="planDate" />
+            </div>
+            <div>
+              <label for="planServings">Portionen</label>
+              <input type="number" id="planServings" class="num-input" min="1" max="30" value="4" />
+            </div>
+          </div>
+          <button type="button" id="planSaveBtn" class="btn-primary">In Essensplan eintragen</button>
+        </div>
+
+        <div class="recipe-sub" style="margin-top:14px;"><strong>Zutaten</strong></div>
+        <div id="detailIngredients" class="detail-box"></div>
+
+        <div class="recipe-sub"><strong>Zubereitung</strong></div>
+        <div id="detailSteps" class="detail-box"></div>
+
+        <div class="recipe-sub">
+          <a id="detailUrl" href="#" target="_blank" rel="noopener" style="color:#93c5fd;">Originalrezept öffnen</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-heading">Gespeicherte Rezepte</h2>
+        <div id="recipeList" class="recipe-grid"></div>
+      </div>
+    </section>
+
+    <!-- Ansicht 3: Neues Rezept -->
+    <section id="addView" class="view">
+      <div class="card">
+        <h2 class="card-heading">Neues Rezept per Link</h2>
+        <div class="stack">
+          <div>
+            <label for="recipeUrl">Rezept-URL</label>
+            <input type="url" id="recipeUrl" placeholder="https://..." />
+          </div>
+          <div>
+            <label for="recipeServings">Wunsch-Portionen</label>
+            <input type="number" id="recipeServings" class="num-input" min="1" max="30" value="4" />
+          </div>
+          <button type="button" id="addBtn" class="btn-primary">Analysieren &amp; Speichern</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button type="button" class="nav-btn active" data-view="planView">
+      <span>Plan</span>
+    </button>
+    <button type="button" class="nav-btn" data-view="recipesView">
+      <span>Rezepte</span>
+    </button>
+    <button type="button" class="nav-btn" data-view="addView">
+      <span>+ Neu</span>
+    </button>
+  </nav>
+
+  <script>
+    let state = { recipes: [], plan: [] };
+    let selectedRecipeId = null;
+
+    function setStatus(msg, type = '') {
+      const el = document.getElementById('statusBar');
+      el.textContent = msg;
+      el.className = 'status ' + type;
+    }
+
+    function setBusy(busy) {
+      document.getElementById('addBtn').disabled = busy;
+      document.getElementById('refreshBtn').disabled = busy;
+      document.getElementById('planSaveBtn').disabled = busy;
+      document.getElementById('deleteBtn').disabled = busy;
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view').forEach(v => {
+        v.classList.toggle('active', v.id === viewId);
+      });
+      document.querySelectorAll('.nav-btn, .tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === viewId);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('.nav-btn, .tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchView(btn.dataset.view));
+    });
+
+    function toIsoDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function renderPlan() {
+      const wrap = document.getElementById('planList');
+      wrap.innerHTML = '';
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayIso = toIsoDate(today);
+
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const iso = toIsoDate(d);
+        const label = d.toLocaleDateString('de-DE', {
+          weekday: 'short',
+          day: '2-digit',
+          month: '2-digit'
+        });
+
+        const card = document.createElement('div');
+        card.className = 'day-card' + (iso === todayIso ? ' today' : '');
+
+        const head = document.createElement('div');
+        head.className = 'day-date';
+        head.textContent = iso === todayIso ? `${label} (Heute)` : label;
+        card.appendChild(head);
+
+        const entries = state.plan.filter(p => p.date === iso);
+        if (!entries.length) {
+          const empty = document.createElement('div');
+          empty.className = 'empty-day';
+          empty.textContent = 'Noch nichts geplant';
+          card.appendChild(empty);
+        } else {
+          entries.forEach(p => {
+            const row = document.createElement('div');
+            row.className = 'meal-row';
+
+            const title = document.createElement('div');
+            title.className = 'meal-title';
+            title.textContent = `${p.title} (${p.servings} P.)`;
+            title.addEventListener('click', () => {
+              if (p.recipeId) {
+                openRecipe(p.recipeId);
+                switchView('recipesView');
+              }
+            });
+
+            const del = document.createElement('button');
+            del.type = 'button';
+            del.className = 'meal-del';
+            del.textContent = '×';
+            del.addEventListener('click', ev => {
+              ev.stopPropagation();
+              setBusy(true);
+              google.script.run
+                .withSuccessHandler(data => {
+                  state = data;
+                  renderPlan();
+                  setBusy(false);
+                  setStatus('Eintrag entfernt.', 'ok');
+                })
+                .withFailureHandler(err => {
+                  setBusy(false);
+                  setStatus(err.message || 'Fehler.', 'err');
+                })
+                .removePlanEntry(p.planId);
+            });
+
+            row.appendChild(title);
+            row.appendChild(del);
+            card.appendChild(row);
+          });
+        }
+
+        wrap.appendChild(card);
+      }
+    }
+
+    function renderRecipes() {
+      const wrap = document.getElementById('recipeList');
+      wrap.innerHTML = '';
+
+      if (!state.recipes.length) {
+        wrap.innerHTML = '<div class="empty-day">Noch keine Rezepte gespeichert.</div>';
+        return;
+      }
+
+      state.recipes.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'recipe-card';
+        card.addEventListener('click', () => openRecipe(r.id));
+
+        const name = document.createElement('div');
+        name.className = 'recipe-name';
+        name.textContent = r.title;
+
+        const sub = document.createElement('div');
+        sub.className = 'recipe-sub';
+        const last = r.lastEaten ? ` • Zuletzt: ${r.lastEaten}` : '';
+        sub.textContent = `${r.servings} Port. • ${r.durationMin} Min.${last}`;
+
+        card.appendChild(name);
+        card.appendChild(sub);
+        wrap.appendChild(card);
+      });
+    }
+
+    function openRecipe(id) {
+      const r = state.recipes.find(item => item.id === id);
+      if (!r) return;
+      selectedRecipeId = r.id;
+
+      document.getElementById('detailCard').style.display = 'block';
+      document.getElementById('detailTitle').textContent = r.title;
+      document.getElementById('detailMeta').textContent =
+        `${r.servings} Portionen • ${r.durationMin} Min.` +
+        (r.lastEaten ? ` • Zuletzt: ${r.lastEaten}` : '');
+      document.getElementById('detailIngredients').textContent = r.ingredients;
+      document.getElementById('detailSteps').textContent = r.steps;
+      document.getElementById('detailUrl').href = r.url || '#';
+      document.getElementById('planServings').value = r.servings || 4;
+      if (!document.getElementById('planDate').value) {
+        document.getElementById('planDate').value = toIsoDate(new Date());
+      }
+    }
+
+    function loadData() {
+      setBusy(true);
+      setStatus('Lade Daten...');
+      google.script.run
+        .withSuccessHandler(data => {
+          state = data || { recipes: [], plan: [] };
+          renderPlan();
+          renderRecipes();
+          if (selectedRecipeId && state.recipes.some(r => r.id === selectedRecipeId)) {
+            openRecipe(selectedRecipeId);
+          } else {
+            document.getElementById('detailCard').style.display = 'none';
+          }
+          setBusy(false);
+          setStatus('Bereit.', 'ok');
+        })
+        .withFailureHandler(err => {
+          setBusy(false);
+          setStatus(err.message || 'Fehler beim Laden.', 'err');
+        })
+        .getAppData();
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', loadData);
+
+    document.getElementById('addBtn').addEventListener('click', () => {
+      const url = document.getElementById('recipeUrl').value.trim();
+      const servings = document.getElementById('recipeServings').value;
+      if (!url) {
+        setStatus('Bitte einen Rezept-Link eingeben.', 'err');
+        return;
+      }
+
+      setBusy(true);
+      setStatus('Analysiere Rezept...');
+      google.script.run
+        .withSuccessHandler(data => {
+          state = data;
+          document.getElementById('recipeUrl').value = '';
+          renderPlan();
+          renderRecipes();
+          setBusy(false);
+          setStatus('Rezept gespeichert.', 'ok');
+          switchView('recipesView');
+        })
+        .withFailureHandler(err => {
+          setBusy(false);
+          setStatus(err.message || 'Fehler beim Analysieren.', 'err');
+        })
+        .addRecipeFromUrl(url, servings);
+    });
+
+    document.getElementById('planSaveBtn').addEventListener('click', () => {
+      if (!selectedRecipeId) return;
+      const dateStr = document.getElementById('planDate').value;
+      const servings = document.getElementById('planServings').value;
+
+      setBusy(true);
+      google.script.run
+        .withSuccessHandler(data => {
+          state = data;
+          renderPlan();
+          renderRecipes();
+          openRecipe(selectedRecipeId);
+          setBusy(false);
+          setStatus('Im Essensplan eingetragen.', 'ok');
+          switchView('planView');
+        })
+        .withFailureHandler(err => {
+          setBusy(false);
+          setStatus(err.message || 'Fehler beim Planen.', 'err');
+        })
+        .planRecipeForDate(selectedRecipeId, dateStr, servings);
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', () => {
+      if (!selectedRecipeId) return;
+      setBusy(true);
+      google.script.run
+        .withSuccessHandler(data => {
+          state = data;
+          selectedRecipeId = null;
+          document.getElementById('detailCard').style.display = 'none';
+          renderPlan();
+          renderRecipes();
+          setBusy(false);
+          setStatus('Rezept gelöscht.', 'ok');
+        })
+        .withFailureHandler(err => {
+          setBusy(false);
+          setStatus(err.message || 'Fehler beim Löschen.', 'err');
+        })
+        .deleteRecipe(selectedRecipeId);
+    });
+
+    window.addEventListener('DOMContentLoaded', loadData);
+  </script>
+</body>
+</html>
