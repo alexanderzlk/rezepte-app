@@ -20,6 +20,7 @@
       --accent-hover: #2563eb;
       --danger: #ef4444;
       --ok: #22c55e;
+      --star: #facc15;
       --nav-h: 64px;
     }
 
@@ -103,6 +104,19 @@
       align-items: stretch;
     }
 
+    .filter-bar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    @media (min-width: 640px) {
+      .filter-bar {
+        grid-template-columns: 1.4fr 1fr;
+      }
+    }
+
     label {
       display: block;
       font-size: 13px;
@@ -110,7 +124,7 @@
       margin-bottom: 4px;
     }
 
-    input, button {
+    input, select, button {
       font-family: inherit;
       font-size: 16px;
       border-radius: 10px;
@@ -121,7 +135,7 @@
       background: var(--surface-2);
     }
 
-    input { width: 100%; }
+    input, select { width: 100%; }
 
     input.num-input {
       width: 88px;
@@ -202,7 +216,7 @@
     .empty-day {
       font-size: 14px;
       color: var(--muted);
-      opacity: 0.7;
+      opacity: 0.75;
     }
 
     .meal-row {
@@ -246,7 +260,29 @@
       cursor: pointer;
     }
 
-    .recipe-card:hover { border-color: var(--accent); }
+    .recipe-card:hover, .recipe-card.selected {
+      border-color: var(--accent);
+    }
+
+    .recipe-thumb {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: block;
+      background: var(--surface);
+    }
+
+    .detail-hero {
+      width: 100%;
+      max-height: 240px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      display: none;
+      background: var(--surface-2);
+    }
 
     .recipe-name {
       font-size: 16px;
@@ -259,15 +295,50 @@
       margin-top: 4px;
     }
 
+    .stars-display {
+      color: var(--star);
+      font-size: 14px;
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+
+    .stars-picker {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .star-btn {
+      min-height: 38px;
+      padding: 4px 10px;
+      font-size: 18px;
+      line-height: 1;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .star-btn.active {
+      color: var(--star);
+      border-color: rgba(250, 204, 21, 0.55);
+      background: rgba(250, 204, 21, 0.12);
+    }
+
     .detail-box {
       background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 12px;
-      white-space: pre-wrap;
+      white-space: pre-line;
       font-family: inherit;
       font-size: 15px;
       margin: 6px 0 12px 0;
+    }
+
+    .steps-box {
+      line-height: 1.65;
     }
 
     .bottom-nav {
@@ -363,7 +434,17 @@
             <h2 id="detailTitle" class="card-heading" style="margin-bottom:4px;"></h2>
             <div id="detailMeta" class="recipe-sub"></div>
           </div>
-          <button type="button" id="deleteBtn" class="btn-danger">Löschen</button>
+          <div class="row-split" style="gap:6px;">
+            <button type="button" id="closeDetailBtn" class="btn-ghost">Zuklappen</button>
+            <button type="button" id="deleteBtn" class="btn-danger">Löschen</button>
+          </div>
+        </div>
+
+        <img id="detailImage" class="detail-hero" alt="Rezeptbild" />
+
+        <div style="margin-top:8px;">
+          <label>Bewertung</label>
+          <div id="ratingPicker" class="stars-picker"></div>
         </div>
 
         <div class="stack" style="margin-top:12px;">
@@ -374,7 +455,7 @@
             </div>
             <div>
               <label for="planServings">Portionen</label>
-              <input type="number" id="planServings" class="num-input" min="1" max="30" value="4" />
+              <input type="number" id="planServings" class="num-input" min="1" max="30" value="3" />
             </div>
           </div>
           <button type="button" id="planSaveBtn" class="btn-primary">In Essensplan eintragen</button>
@@ -384,7 +465,7 @@
         <div id="detailIngredients" class="detail-box"></div>
 
         <div class="recipe-sub"><strong>Zubereitung</strong></div>
-        <div id="detailSteps" class="detail-box"></div>
+        <div id="detailSteps" class="detail-box steps-box"></div>
 
         <div class="recipe-sub">
           <a id="detailUrl" href="#" target="_blank" rel="noopener" style="color:#93c5fd;">Originalrezept öffnen</a>
@@ -393,6 +474,26 @@
 
       <div class="card">
         <h2 class="card-heading">Gespeicherte Rezepte</h2>
+        <div class="filter-bar">
+          <div>
+            <label for="recipeSearch">Suche (Name oder Zutat)</label>
+            <input type="search" id="recipeSearch" placeholder="z. B. Pasta, Hähnchen, Tomate..." />
+          </div>
+          <div>
+            <label for="starFilter">Sterne-Filter</label>
+            <select id="starFilter">
+              <option value="all">Alle Rezepte</option>
+              <option value="min3">Mindestens 3 Sterne (3–5)</option>
+              <option value="min4">Mindestens 4 Sterne (4–5)</option>
+              <option value="5">Genau 5 Sterne</option>
+              <option value="4">Genau 4 Sterne</option>
+              <option value="3">Genau 3 Sterne</option>
+              <option value="2">Genau 2 Sterne</option>
+              <option value="1">Genau 1 Stern</option>
+              <option value="0">Ohne Bewertung</option>
+            </select>
+          </div>
+        </div>
         <div id="recipeList" class="recipe-grid"></div>
       </div>
     </section>
@@ -407,7 +508,7 @@
           </div>
           <div>
             <label for="recipeServings">Wunsch-Portionen</label>
-            <input type="number" id="recipeServings" class="num-input" min="1" max="30" value="4" />
+            <input type="number" id="recipeServings" class="num-input" min="1" max="30" value="3" />
           </div>
           <button type="button" id="addBtn" class="btn-primary">Analysieren &amp; Speichern</button>
         </div>
@@ -486,6 +587,22 @@
       return `${y}-${m}-${day}`;
     }
 
+    function formatStepsWithSpacers(rawSteps) {
+      const text = String(rawSteps || '').replace(/\r\n/g, '\n').trim();
+      if (!text) return '';
+      const blocks = text.split(/\n\s*\n+/);
+      if (blocks.length > 1) {
+        return blocks.map(b => b.trim()).join('\n\n');
+      }
+      return text.split('\n').map(line => line.trim()).filter(Boolean).join('\n\n');
+    }
+
+    function starsText(rating) {
+      const r = Number(rating || 0);
+      if (r < 1) return 'Noch nicht bewertet';
+      return '★'.repeat(r) + '☆'.repeat(5 - r);
+    }
+
     function renderPlan() {
       const wrap = document.getElementById('planList');
       wrap.innerHTML = '';
@@ -528,7 +645,7 @@
             title.textContent = `${p.title} (${p.servings} P.)`;
             title.addEventListener('click', () => {
               if (p.recipeId) {
-                openRecipe(p.recipeId);
+                openRecipe(p.recipeId, true);
                 switchView('recipesView');
               }
             });
@@ -561,23 +678,58 @@
       }
     }
 
+    function matchesStarFilter(rating, filterVal) {
+      const r = Number(rating || 0);
+      if (filterVal === 'all') return true;
+      if (filterVal === 'min3') return r >= 3;
+      if (filterVal === 'min4') return r >= 4;
+      return r === Number(filterVal);
+    }
+
+    function getFilteredRecipes() {
+      const query = (document.getElementById('recipeSearch').value || '').trim().toLowerCase();
+      const filterVal = document.getElementById('starFilter').value || 'all';
+
+      return state.recipes.filter(r => {
+        if (!matchesStarFilter(r.rating, filterVal)) return false;
+        if (!query) return true;
+        const hay = `${r.title} ${r.ingredients}`.toLowerCase();
+        return hay.indexOf(query) !== -1;
+      });
+    }
+
     function renderRecipes() {
       const wrap = document.getElementById('recipeList');
       wrap.innerHTML = '';
 
-      if (!state.recipes.length) {
-        wrap.innerHTML = '<div class="empty-day">Noch keine Rezepte gespeichert.</div>';
+      const list = getFilteredRecipes();
+      if (!list.length) {
+        wrap.innerHTML = '<div class="empty-day">Keine passenden Rezepte gefunden.</div>';
         return;
       }
 
-      state.recipes.forEach(r => {
+      list.forEach(r => {
         const card = document.createElement('div');
-        card.className = 'recipe-card';
-        card.addEventListener('click', () => openRecipe(r.id));
+        card.className = 'recipe-card' + (r.id === selectedRecipeId ? ' selected' : '');
+        card.addEventListener('click', () => toggleRecipe(r.id));
+
+        if (r.imageUrl) {
+          const img = document.createElement('img');
+          img.className = 'recipe-thumb';
+          img.src = r.imageUrl;
+          img.alt = r.title;
+          img.loading = 'lazy';
+          img.onerror = () => { img.style.display = 'none'; };
+          card.appendChild(img);
+        }
 
         const name = document.createElement('div');
         name.className = 'recipe-name';
         name.textContent = r.title;
+
+        const stars = document.createElement('div');
+        stars.className = 'stars-display';
+        stars.textContent = starsText(r.rating);
 
         const sub = document.createElement('div');
         sub.className = 'recipe-sub';
@@ -585,12 +737,61 @@
         sub.textContent = `${r.servings} Port. • ${r.durationMin} Min.${last}`;
 
         card.appendChild(name);
+        card.appendChild(stars);
         card.appendChild(sub);
         wrap.appendChild(card);
       });
     }
 
-    function openRecipe(id) {
+    function closeRecipeDetail() {
+      selectedRecipeId = null;
+      document.getElementById('detailCard').style.display = 'none';
+      renderRecipes();
+    }
+
+    function toggleRecipe(id) {
+      if (selectedRecipeId === id && document.getElementById('detailCard').style.display !== 'none') {
+        closeRecipeDetail();
+        return;
+      }
+      openRecipe(id, false);
+    }
+
+    function renderRatingPicker(currentRating) {
+      const picker = document.getElementById('ratingPicker');
+      picker.innerHTML = '';
+      const activeVal = Number(currentRating || 0);
+
+      for (let s = 1; s <= 5; s++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'star-btn' + (s <= activeVal ? ' active' : '');
+        btn.textContent = s <= activeVal ? '★' : '☆';
+        btn.title = `${s} Sterne`;
+        btn.addEventListener('click', async () => {
+          if (!selectedRecipeId) return;
+          const nextRating = activeVal === s ? 0 : s;
+          setBusy(true);
+          try {
+            state = await apiPostAction({
+              action: 'setRating',
+              recipeId: selectedRecipeId,
+              rating: nextRating
+            });
+            openRecipe(selectedRecipeId, false);
+            renderRecipes();
+            setStatus(nextRating ? `Bewertung: ${nextRating} Sterne.` : 'Bewertung entfernt.', 'ok');
+          } catch (err) {
+            setStatus(err.message || 'Fehler bei Bewertung.', 'err');
+          } finally {
+            setBusy(false);
+          }
+        });
+        picker.appendChild(btn);
+      }
+    }
+
+    function openRecipe(id, scrollTop) {
       const r = state.recipes.find(item => item.id === id);
       if (!r) return;
       selectedRecipeId = r.id;
@@ -600,14 +801,36 @@
       document.getElementById('detailMeta').textContent =
         `${r.servings} Portionen • ${r.durationMin} Min.` +
         (r.lastEaten ? ` • Zuletzt: ${r.lastEaten}` : '');
+
+      const heroImg = document.getElementById('detailImage');
+      if (r.imageUrl) {
+        heroImg.src = r.imageUrl;
+        heroImg.style.display = 'block';
+        heroImg.onerror = () => { heroImg.style.display = 'none'; };
+      } else {
+        heroImg.style.display = 'none';
+        heroImg.removeAttribute('src');
+      }
+
+      renderRatingPicker(r.rating);
+
       document.getElementById('detailIngredients').textContent = r.ingredients;
-      document.getElementById('detailSteps').textContent = r.steps;
+      document.getElementById('detailSteps').textContent = formatStepsWithSpacers(r.steps);
       document.getElementById('detailUrl').href = r.url || '#';
-      document.getElementById('planServings').value = r.servings || 4;
+      document.getElementById('planServings').value = 3;
       if (!document.getElementById('planDate').value) {
         document.getElementById('planDate').value = toIsoDate(new Date());
       }
+
+      renderRecipes();
+      if (scrollTop) {
+        document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
+
+    document.getElementById('closeDetailBtn').addEventListener('click', closeRecipeDetail);
+    document.getElementById('recipeSearch').addEventListener('input', renderRecipes);
+    document.getElementById('starFilter').addEventListener('change', renderRecipes);
 
     async function loadData() {
       setBusy(true);
@@ -617,7 +840,7 @@
         renderPlan();
         renderRecipes();
         if (selectedRecipeId && state.recipes.some(r => r.id === selectedRecipeId)) {
-          openRecipe(selectedRecipeId);
+          openRecipe(selectedRecipeId, false);
         } else {
           document.getElementById('detailCard').style.display = 'none';
         }
@@ -633,7 +856,7 @@
 
     document.getElementById('addBtn').addEventListener('click', async () => {
       const url = document.getElementById('recipeUrl').value.trim();
-      const servings = document.getElementById('recipeServings').value;
+      const servings = document.getElementById('recipeServings').value || 3;
       if (!url) {
         setStatus('Bitte einen Rezept-Link eingeben.', 'err');
         return;
@@ -644,6 +867,7 @@
       try {
         state = await apiPostAction({ action: 'addRecipe', url, servings });
         document.getElementById('recipeUrl').value = '';
+        document.getElementById('recipeServings').value = 3;
         renderPlan();
         renderRecipes();
         setStatus('Rezept gespeichert.', 'ok');
@@ -658,7 +882,7 @@
     document.getElementById('planSaveBtn').addEventListener('click', async () => {
       if (!selectedRecipeId) return;
       const dateStr = document.getElementById('planDate').value;
-      const servings = document.getElementById('planServings').value;
+      const servings = document.getElementById('planServings').value || 3;
 
       setBusy(true);
       try {
@@ -670,7 +894,7 @@
         });
         renderPlan();
         renderRecipes();
-        openRecipe(selectedRecipeId);
+        openRecipe(selectedRecipeId, false);
         setStatus('Im Essensplan eingetragen.', 'ok');
         switchView('planView');
       } catch (err) {
@@ -685,8 +909,7 @@
       setBusy(true);
       try {
         state = await apiPostAction({ action: 'deleteRecipe', recipeId: selectedRecipeId });
-        selectedRecipeId = null;
-        document.getElementById('detailCard').style.display = 'none';
+        closeRecipeDetail();
         renderPlan();
         renderRecipes();
         setStatus('Rezept gelöscht.', 'ok');
