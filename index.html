@@ -136,7 +136,8 @@
 
     @media (min-width: 640px) {
       .filter-bar {
-        grid-template-columns: 1.4fr 1fr;
+        grid-template-columns: 1.4fr 1fr 1fr auto;
+        align-items: end;
       }
     }
 
@@ -233,6 +234,7 @@
 
     .meal-row {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
@@ -243,22 +245,53 @@
       margin-top: 6px;
     }
 
+    .meal-row.done {
+      opacity: 0.65;
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+
     .meal-title {
-      flex: 1;
+      flex: 1 1 140px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
     }
 
-    .meal-del {
-      width: 34px;
-      min-width: 34px;
-      height: 34px;
-      min-height: 34px;
+    .meal-row.done .meal-title {
+      text-decoration: line-through;
+    }
+
+    .meal-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mini-btn {
+      width: 32px;
+      min-width: 32px;
+      height: 32px;
+      min-height: 32px;
       padding: 0;
-      font-size: 18px;
+      font-size: 15px;
       border-radius: 8px;
       background: rgba(0, 0, 0, 0.28);
+    }
+
+    .mini-btn.done-active {
+      border-color: rgba(34, 197, 94, 0.7);
+      color: #86efac;
+    }
+
+    .meal-servings-label {
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 38px;
+      text-align: center;
+    }
+
+    .meal-del {
       border-color: rgba(252, 165, 165, 0.45);
       color: #fca5a5;
     }
@@ -506,6 +539,18 @@
               <option value="0">Ohne Bewertung</option>
             </select>
           </div>
+          <div>
+            <label for="timeFilter">Zubereitungszeit</label>
+            <select id="timeFilter">
+              <option value="all">Alle Zeiten</option>
+              <option value="20">Bis 20 Min.</option>
+              <option value="30">Bis 30 Min.</option>
+              <option value="45">Bis 45 Min.</option>
+            </select>
+          </div>
+          <div>
+            <button type="button" id="randomRecipeBtn" class="btn-ghost" style="width:100%;min-height:46px;">Zufall</button>
+          </div>
         </div>
         <div id="recipeList" class="recipe-grid"></div>
       </div>
@@ -536,10 +581,11 @@
   </nav>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyI8ZYz6yJe2Ubay1enh2lAbuQkS8f78T7vE7ZnXrm3yYLjgE1QNyjBV_Zu3aW7sIE/exec';
+    const API_URL = '[https://script.google.com/macros/s/AKfycbyI8ZYz6yJe2Ubay1enh2lAbuQkS8f78T7vE7ZnXrm3yYLjgE1QNyjBV_Zu3aW7sIE/exec](https://script.google.com/macros/s/AKfycbyI8ZYz6yJe2Ubay1enh2lAbuQkS8f78T7vE7ZnXrm3yYLjgE1QNyjBV_Zu3aW7sIE/exec)';
 
     let state = { recipes: [], plan: [] };
     let selectedRecipeId = null;
+    let activeServingsOverride = null;
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -565,6 +611,7 @@
       document.getElementById('refreshBtn').disabled = busy;
       document.getElementById('planSaveBtn').disabled = busy;
       document.getElementById('deleteBtn').disabled = busy;
+      document.getElementById('randomRecipeBtn').disabled = busy;
     }
 
     async function apiGetData() {
@@ -617,10 +664,47 @@
       return text.split('\n').map(line => line.trim()).filter(Boolean).join('\n\n');
     }
 
+    function scaleIngredientsText(rawIngredients, baseServings, targetServings) {
+      const text = String(rawIngredients || '');
+      const base = Number(baseServings || 0);
+      const target = Number(targetServings || 0);
+      if (!base || !target || base === target) return text;
+      const factor = target / base;
+
+      return text.split('\n').map(line => {
+        return line.replace(/(\d+(?:[.,]\d+)?)/g, match => {
+          const val = parseFloat(match.replace(',', '.'));
+          if (isNaN(val)) return match;
+          const scaled = val * factor;
+          const rounded = Math.round(scaled * 10) / 10;
+          return String(rounded).replace('.', ',');
+        });
+      }).join('\n');
+    }
+
     function starsText(rating) {
       const r = Number(rating || 0);
       if (r < 1) return 'Noch nicht bewertet';
       return '★'.repeat(r) + '☆'.repeat(5 - r);
+    }
+
+    async function patchPlanEntry(planId, patch) {
+      setBusy(true);
+      setSyncState('Lädt...', 'busy');
+      try {
+        state = await apiPostAction({
+          action: 'updatePlanEntry',
+          planId,
+          servings: patch.servings,
+          done: patch.done
+        });
+        renderPlan();
+        markUpdatedNow();
+      } catch (err) {
+        setSyncState('Fehler', 'err');
+      } finally {
+        setBusy(false);
+      }
     }
 
     function renderPlan() {
@@ -658,22 +742,62 @@
         } else {
           entries.forEach(p => {
             const row = document.createElement('div');
-            row.className = 'meal-row';
+            row.className = 'meal-row' + (p.done ? ' done' : '');
 
             const title = document.createElement('div');
             title.className = 'meal-title';
-            title.textContent = `${p.title} (${p.servings} P.)`;
+            title.textContent = p.title;
             title.addEventListener('click', () => {
               if (p.recipeId) {
-                openRecipe(p.recipeId, true);
+                openRecipe(p.recipeId, true, p.servings);
                 switchView('recipesView');
               }
             });
 
+            const controls = document.createElement('div');
+            controls.className = 'meal-controls';
+
+            const minusBtn = document.createElement('button');
+            minusBtn.type = 'button';
+            minusBtn.className = 'mini-btn';
+            minusBtn.textContent = '−';
+            minusBtn.title = 'Portionen verringern';
+            minusBtn.addEventListener('click', ev => {
+              ev.stopPropagation();
+              const nextServings = Math.max(1, Number(p.servings || 3) - 1);
+              patchPlanEntry(p.planId, { servings: nextServings, done: p.done });
+            });
+
+            const servLabel = document.createElement('span');
+            servLabel.className = 'meal-servings-label';
+            servLabel.textContent = `${p.servings} P.`;
+
+            const plusBtn = document.createElement('button');
+            plusBtn.type = 'button';
+            plusBtn.className = 'mini-btn';
+            plusBtn.textContent = '+';
+            plusBtn.title = 'Portionen erhöhen';
+            plusBtn.addEventListener('click', ev => {
+              ev.stopPropagation();
+              const nextServings = Math.min(30, Number(p.servings || 3) + 1);
+              patchPlanEntry(p.planId, { servings: nextServings, done: p.done });
+            });
+
+            const doneBtn = document.createElement('button');
+            doneBtn.type = 'button';
+            doneBtn.className = 'mini-btn' + (p.done ? ' done-active' : '');
+            doneBtn.textContent = '✓';
+            doneBtn.title = p.done ? 'Als offen markieren' : 'Als erledigt abhaken';
+            doneBtn.addEventListener('click', ev => {
+              ev.stopPropagation();
+              patchPlanEntry(p.planId, { servings: p.servings, done: !p.done });
+            });
+
             const del = document.createElement('button');
             del.type = 'button';
-            del.className = 'meal-del';
+            del.className = 'mini-btn meal-del';
             del.textContent = '×';
+            del.title = 'Eintrag löschen';
             del.addEventListener('click', async ev => {
               ev.stopPropagation();
               setBusy(true);
@@ -689,8 +813,14 @@
               }
             });
 
+            controls.appendChild(minusBtn);
+            controls.appendChild(servLabel);
+            controls.appendChild(plusBtn);
+            controls.appendChild(doneBtn);
+            controls.appendChild(del);
+
             row.appendChild(title);
-            row.appendChild(del);
+            row.appendChild(controls);
             card.appendChild(row);
           });
         }
@@ -707,12 +837,21 @@
       return r === Number(filterVal);
     }
 
+    function matchesTimeFilter(durationMin, timeVal) {
+      if (timeVal === 'all') return true;
+      const maxMin = Number(timeVal);
+      const dur = Number(durationMin || 0);
+      return dur > 0 && dur <= maxMin;
+    }
+
     function getFilteredRecipes() {
       const query = (document.getElementById('recipeSearch').value || '').trim().toLowerCase();
       const filterVal = document.getElementById('starFilter').value || 'all';
+      const timeVal = document.getElementById('timeFilter').value || 'all';
 
       return state.recipes.filter(r => {
         if (!matchesStarFilter(r.rating, filterVal)) return false;
+        if (!matchesTimeFilter(r.durationMin, timeVal)) return false;
         if (!query) return true;
         const hay = `${r.title} ${r.ingredients}`.toLowerCase();
         return hay.indexOf(query) !== -1;
@@ -766,6 +905,7 @@
 
     function closeRecipeDetail() {
       selectedRecipeId = null;
+      activeServingsOverride = null;
       document.getElementById('detailCard').style.display = 'none';
       renderRecipes();
     }
@@ -775,7 +915,7 @@
         closeRecipeDetail();
         return;
       }
-      openRecipe(id, false);
+      openRecipe(id, false, null);
     }
 
     function renderRatingPicker(currentRating) {
@@ -800,7 +940,7 @@
               recipeId: selectedRecipeId,
               rating: nextRating
             });
-            openRecipe(selectedRecipeId, false);
+            openRecipe(selectedRecipeId, false, activeServingsOverride);
             renderRecipes();
             markUpdatedNow();
           } catch (err) {
@@ -813,15 +953,18 @@
       }
     }
 
-    function openRecipe(id, scrollTop) {
+    function openRecipe(id, scrollTop, customServings = null) {
       const r = state.recipes.find(item => item.id === id);
       if (!r) return;
       selectedRecipeId = r.id;
+      activeServingsOverride = customServings ? Number(customServings) : null;
+
+      const shownServings = activeServingsOverride || Number(r.servings || 3);
 
       document.getElementById('detailCard').style.display = 'block';
       document.getElementById('detailTitle').textContent = r.title;
       document.getElementById('detailMeta').textContent =
-        `${r.servings} Portionen • ${r.durationMin} Min.` +
+        `${shownServings} Portionen • ${r.durationMin} Min.` +
         (r.lastEaten ? ` • Zuletzt: ${r.lastEaten}` : '');
 
       const heroImg = document.getElementById('detailImage');
@@ -836,10 +979,11 @@
 
       renderRatingPicker(r.rating);
 
-      document.getElementById('detailIngredients').textContent = r.ingredients;
+      document.getElementById('detailIngredients').textContent =
+        scaleIngredientsText(r.ingredients, r.servings, shownServings);
       document.getElementById('detailSteps').textContent = formatStepsWithSpacers(r.steps);
       document.getElementById('detailUrl').href = r.url || '#';
-      document.getElementById('planServings').value = 3;
+      document.getElementById('planServings').value = shownServings;
       if (!document.getElementById('planDate').value) {
         document.getElementById('planDate').value = toIsoDate(new Date());
       }
@@ -853,6 +997,14 @@
     document.getElementById('closeDetailBtn').addEventListener('click', closeRecipeDetail);
     document.getElementById('recipeSearch').addEventListener('input', renderRecipes);
     document.getElementById('starFilter').addEventListener('change', renderRecipes);
+    document.getElementById('timeFilter').addEventListener('change', renderRecipes);
+
+    document.getElementById('randomRecipeBtn').addEventListener('click', () => {
+      const pool = getFilteredRecipes();
+      if (!pool.length) return;
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      openRecipe(pick.id, true, null);
+    });
 
     async function loadData() {
       setBusy(true);
@@ -862,7 +1014,7 @@
         renderPlan();
         renderRecipes();
         if (selectedRecipeId && state.recipes.some(r => r.id === selectedRecipeId)) {
-          openRecipe(selectedRecipeId, false);
+          openRecipe(selectedRecipeId, false, activeServingsOverride);
         } else {
           document.getElementById('detailCard').style.display = 'none';
         }
@@ -917,7 +1069,7 @@
         });
         renderPlan();
         renderRecipes();
-        openRecipe(selectedRecipeId, false);
+        openRecipe(selectedRecipeId, false, null);
         markUpdatedNow();
         switchView('planView');
       } catch (err) {
