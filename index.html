@@ -162,8 +162,8 @@
     input, select { width: 100%; }
 
     input.num-input {
-      width: 88px;
-      min-width: 88px;
+      width: 96px;
+      min-width: 96px;
       text-align: center;
     }
 
@@ -252,7 +252,7 @@
     }
 
     .meal-title {
-      flex: 1 1 140px;
+      flex: 1 1 130px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
@@ -285,9 +285,9 @@
     }
 
     .meal-servings-label {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      min-width: 38px;
+      min-width: 56px;
       text-align: center;
     }
 
@@ -500,8 +500,8 @@
               <input type="date" id="planDate" />
             </div>
             <div>
-              <label for="planServings">Portionen</label>
-              <input type="number" id="planServings" class="num-input" min="1" max="30" value="3" />
+              <label id="planServingsLabel" for="planServings">Menge</label>
+              <input type="number" id="planServings" class="num-input" min="0.5" max="100" step="0.5" value="1" />
             </div>
           </div>
           <button type="button" id="planSaveBtn" class="btn-primary">In Essensplan eintragen</button>
@@ -564,10 +564,7 @@
             <label for="recipeUrl">Rezept-URL</label>
             <input type="url" id="recipeUrl" placeholder="https://..." />
           </div>
-          <div>
-            <label for="recipeServings">Wunsch-Portionen</label>
-            <input type="number" id="recipeServings" class="num-input" min="1" max="30" value="3" />
-          </div>
+          <div class="recipe-sub">Menge und Einheit (Portionen, Ganzes oder Stücke) werden automatisch von der Seite übernommen.</div>
           <button type="button" id="addBtn" class="btn-primary">Analysieren &amp; Speichern</button>
         </div>
       </div>
@@ -652,6 +649,12 @@
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       return `${y}-${m}-${day}`;
+    }
+
+    function formatAmount(val) {
+      const n = Number(val || 0);
+      const rounded = Math.round(n * 100) / 100;
+      return String(rounded).replace('.', ',');
     }
 
     function formatStepsWithSpacers(rawSteps) {
@@ -741,6 +744,10 @@
           card.appendChild(empty);
         } else {
           entries.forEach(p => {
+            const unit = p.unitLabel || 'Port.';
+            const step = unit === 'Ganzes' ? 0.5 : 1;
+            const currentAmt = Number(p.servings || 1);
+
             const row = document.createElement('div');
             row.className = 'meal-row' + (p.done ? ' done' : '');
 
@@ -749,7 +756,7 @@
             title.textContent = p.title;
             title.addEventListener('click', () => {
               if (p.recipeId) {
-                openRecipe(p.recipeId, true, p.servings);
+                openRecipe(p.recipeId, true, currentAmt);
                 switchView('recipesView');
               }
             });
@@ -761,26 +768,26 @@
             minusBtn.type = 'button';
             minusBtn.className = 'mini-btn';
             minusBtn.textContent = '−';
-            minusBtn.title = 'Portionen verringern';
+            minusBtn.title = 'Menge verringern';
             minusBtn.addEventListener('click', ev => {
               ev.stopPropagation();
-              const nextServings = Math.max(1, Number(p.servings || 3) - 1);
-              patchPlanEntry(p.planId, { servings: nextServings, done: p.done });
+              const nextAmt = Math.max(0.5, currentAmt - step);
+              patchPlanEntry(p.planId, { servings: nextAmt, done: p.done });
             });
 
             const servLabel = document.createElement('span');
             servLabel.className = 'meal-servings-label';
-            servLabel.textContent = `${p.servings} P.`;
+            servLabel.textContent = `${formatAmount(currentAmt)} ${unit}`;
 
             const plusBtn = document.createElement('button');
             plusBtn.type = 'button';
             plusBtn.className = 'mini-btn';
             plusBtn.textContent = '+';
-            plusBtn.title = 'Portionen erhöhen';
+            plusBtn.title = 'Menge erhöhen';
             plusBtn.addEventListener('click', ev => {
               ev.stopPropagation();
-              const nextServings = Math.min(30, Number(p.servings || 3) + 1);
-              patchPlanEntry(p.planId, { servings: nextServings, done: p.done });
+              const nextAmt = Math.min(100, currentAmt + step);
+              patchPlanEntry(p.planId, { servings: nextAmt, done: p.done });
             });
 
             const doneBtn = document.createElement('button');
@@ -790,7 +797,7 @@
             doneBtn.title = p.done ? 'Als offen markieren' : 'Als erledigt abhaken';
             doneBtn.addEventListener('click', ev => {
               ev.stopPropagation();
-              patchPlanEntry(p.planId, { servings: p.servings, done: !p.done });
+              patchPlanEntry(p.planId, { servings: currentAmt, done: !p.done });
             });
 
             const del = document.createElement('button');
@@ -869,6 +876,7 @@
       }
 
       list.forEach(r => {
+        const unit = r.unitLabel || 'Port.';
         const card = document.createElement('div');
         card.className = 'recipe-card' + (r.id === selectedRecipeId ? ' selected' : '');
         card.addEventListener('click', () => toggleRecipe(r.id));
@@ -894,7 +902,7 @@
         const sub = document.createElement('div');
         sub.className = 'recipe-sub';
         const last = r.lastEaten ? ` • Zuletzt: ${r.lastEaten}` : '';
-        sub.textContent = `${r.servings} Port. • ${r.durationMin} Min.${last}`;
+        sub.textContent = `${formatAmount(r.servings)} ${unit} • ${r.durationMin} Min.${last}`;
 
         card.appendChild(name);
         card.appendChild(stars);
@@ -959,12 +967,14 @@
       selectedRecipeId = r.id;
       activeServingsOverride = customServings ? Number(customServings) : null;
 
-      const shownServings = activeServingsOverride || Number(r.servings || 3);
+      const unit = r.unitLabel || 'Port.';
+      const baseAmt = Number(r.servings || 1);
+      const shownAmt = activeServingsOverride || baseAmt;
 
       document.getElementById('detailCard').style.display = 'block';
       document.getElementById('detailTitle').textContent = r.title;
       document.getElementById('detailMeta').textContent =
-        `${shownServings} Portionen • ${r.durationMin} Min.` +
+        `${formatAmount(shownAmt)} ${unit} • ${r.durationMin} Min.` +
         (r.lastEaten ? ` • Zuletzt: ${r.lastEaten}` : '');
 
       const heroImg = document.getElementById('detailImage');
@@ -980,10 +990,15 @@
       renderRatingPicker(r.rating);
 
       document.getElementById('detailIngredients').textContent =
-        scaleIngredientsText(r.ingredients, r.servings, shownServings);
+        scaleIngredientsText(r.ingredients, baseAmt, shownAmt);
       document.getElementById('detailSteps').textContent = formatStepsWithSpacers(r.steps);
       document.getElementById('detailUrl').href = r.url || '#';
-      document.getElementById('planServings').value = shownServings;
+
+      document.getElementById('planServingsLabel').textContent = `Menge (${unit})`;
+      const planInput = document.getElementById('planServings');
+      planInput.step = unit === 'Ganzes' ? '0.5' : '1';
+      planInput.value = shownAmt;
+
       if (!document.getElementById('planDate').value) {
         document.getElementById('planDate').value = toIsoDate(new Date());
       }
@@ -1030,7 +1045,6 @@
 
     document.getElementById('addBtn').addEventListener('click', async () => {
       const url = document.getElementById('recipeUrl').value.trim();
-      const servings = document.getElementById('recipeServings').value || 3;
       if (!url) {
         setSyncState('Link fehlt', 'err');
         return;
@@ -1039,9 +1053,8 @@
       setBusy(true);
       setSyncState('Analysiere...', 'busy');
       try {
-        state = await apiPostAction({ action: 'addRecipe', url, servings });
+        state = await apiPostAction({ action: 'addRecipe', url });
         document.getElementById('recipeUrl').value = '';
-        document.getElementById('recipeServings').value = 3;
         renderPlan();
         renderRecipes();
         markUpdatedNow();
@@ -1056,7 +1069,7 @@
     document.getElementById('planSaveBtn').addEventListener('click', async () => {
       if (!selectedRecipeId) return;
       const dateStr = document.getElementById('planDate').value;
-      const servings = document.getElementById('planServings').value || 3;
+      const servings = document.getElementById('planServings').value;
 
       setBusy(true);
       setSyncState('Lädt...', 'busy');
