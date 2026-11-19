@@ -53,7 +53,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       padding: 12px 16px;
       background: rgba(15, 17, 21, 0.94);
       backdrop-filter: blur(10px);
@@ -66,6 +66,29 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .sync-stamp {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .sync-stamp.busy {
+      color: #93c5fd;
+    }
+
+    .sync-stamp.err {
+      color: #f87171;
     }
 
     .container {
@@ -168,9 +191,9 @@
     .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
 
     .btn-ghost {
-      min-height: 38px;
-      padding: 6px 12px;
-      font-size: 14px;
+      min-height: 36px;
+      padding: 6px 10px;
+      font-size: 13px;
       background: var(--surface-2);
     }
 
@@ -182,17 +205,6 @@
       border-color: rgba(239, 68, 68, 0.5);
       color: #fca5a5;
     }
-
-    .status {
-      margin-top: 10px;
-      font-size: 14px;
-      color: var(--muted);
-      min-height: 20px;
-      word-break: break-word;
-    }
-
-    .status.ok { color: var(--ok); }
-    .status.err { color: #f87171; }
 
     .day-card {
       background: var(--surface-2);
@@ -414,12 +426,13 @@
       <button type="button" class="tab-btn" data-view="recipesView">Rezepte</button>
       <button type="button" class="tab-btn" data-view="addView">+ Rezept</button>
     </div>
-    <button type="button" id="refreshBtn" class="btn-ghost">Neu laden</button>
+    <div class="topbar-right">
+      <span id="syncStamp" class="sync-stamp"></span>
+      <button type="button" id="refreshBtn" class="btn-ghost">Neu laden</button>
+    </div>
   </header>
 
   <main class="container">
-    <div id="statusBar" class="status"></div>
-
     <section id="planView" class="view active">
       <div class="card">
         <h2 class="card-heading">Essensplan (nächste 14 Tage)</h2>
@@ -534,10 +547,17 @@
       });
     }
 
-    function setStatus(msg, type = '') {
-      const el = document.getElementById('statusBar');
-      el.textContent = msg;
-      el.className = 'status ' + type;
+    function setSyncState(text, mode = '') {
+      const el = document.getElementById('syncStamp');
+      el.textContent = text;
+      el.className = 'sync-stamp' + (mode ? ' ' + mode : '');
+    }
+
+    function markUpdatedNow() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+      const timeStr = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      setSyncState(`${dateStr}, ${timeStr}`, '');
     }
 
     function setBusy(busy) {
@@ -657,12 +677,13 @@
             del.addEventListener('click', async ev => {
               ev.stopPropagation();
               setBusy(true);
+              setSyncState('Lädt...', 'busy');
               try {
                 state = await apiPostAction({ action: 'removePlan', planId: p.planId });
                 renderPlan();
-                setStatus('Eintrag entfernt.', 'ok');
+                markUpdatedNow();
               } catch (err) {
-                setStatus(err.message || 'Fehler.', 'err');
+                setSyncState('Fehler', 'err');
               } finally {
                 setBusy(false);
               }
@@ -772,6 +793,7 @@
           if (!selectedRecipeId) return;
           const nextRating = activeVal === s ? 0 : s;
           setBusy(true);
+          setSyncState('Lädt...', 'busy');
           try {
             state = await apiPostAction({
               action: 'setRating',
@@ -780,9 +802,9 @@
             });
             openRecipe(selectedRecipeId, false);
             renderRecipes();
-            setStatus(nextRating ? `Bewertung: ${nextRating} Sterne.` : 'Bewertung entfernt.', 'ok');
+            markUpdatedNow();
           } catch (err) {
-            setStatus(err.message || 'Fehler bei Bewertung.', 'err');
+            setSyncState('Fehler', 'err');
           } finally {
             setBusy(false);
           }
@@ -834,7 +856,7 @@
 
     async function loadData() {
       setBusy(true);
-      setStatus('Lade Daten...');
+      setSyncState('Lädt...', 'busy');
       try {
         state = (await apiGetData()) || { recipes: [], plan: [] };
         renderPlan();
@@ -844,9 +866,9 @@
         } else {
           document.getElementById('detailCard').style.display = 'none';
         }
-        setStatus('Bereit.', 'ok');
+        markUpdatedNow();
       } catch (err) {
-        setStatus(err.message || 'Fehler beim Laden.', 'err');
+        setSyncState('Fehler', 'err');
       } finally {
         setBusy(false);
       }
@@ -858,22 +880,22 @@
       const url = document.getElementById('recipeUrl').value.trim();
       const servings = document.getElementById('recipeServings').value || 3;
       if (!url) {
-        setStatus('Bitte einen Rezept-Link eingeben.', 'err');
+        setSyncState('Link fehlt', 'err');
         return;
       }
 
       setBusy(true);
-      setStatus('Analysiere Rezept...');
+      setSyncState('Analysiere...', 'busy');
       try {
         state = await apiPostAction({ action: 'addRecipe', url, servings });
         document.getElementById('recipeUrl').value = '';
         document.getElementById('recipeServings').value = 3;
         renderPlan();
         renderRecipes();
-        setStatus('Rezept gespeichert.', 'ok');
+        markUpdatedNow();
         switchView('recipesView');
       } catch (err) {
-        setStatus(err.message || 'Fehler beim Analysieren.', 'err');
+        setSyncState('Fehler', 'err');
       } finally {
         setBusy(false);
       }
@@ -885,6 +907,7 @@
       const servings = document.getElementById('planServings').value || 3;
 
       setBusy(true);
+      setSyncState('Lädt...', 'busy');
       try {
         state = await apiPostAction({
           action: 'planRecipe',
@@ -895,10 +918,10 @@
         renderPlan();
         renderRecipes();
         openRecipe(selectedRecipeId, false);
-        setStatus('Im Essensplan eingetragen.', 'ok');
+        markUpdatedNow();
         switchView('planView');
       } catch (err) {
-        setStatus(err.message || 'Fehler beim Planen.', 'err');
+        setSyncState('Fehler', 'err');
       } finally {
         setBusy(false);
       }
@@ -907,14 +930,15 @@
     document.getElementById('deleteBtn').addEventListener('click', async () => {
       if (!selectedRecipeId) return;
       setBusy(true);
+      setSyncState('Lädt...', 'busy');
       try {
         state = await apiPostAction({ action: 'deleteRecipe', recipeId: selectedRecipeId });
         closeRecipeDetail();
         renderPlan();
         renderRecipes();
-        setStatus('Rezept gelöscht.', 'ok');
+        markUpdatedNow();
       } catch (err) {
-        setStatus(err.message || 'Fehler beim Löschen.', 'err');
+        setSyncState('Fehler', 'err');
       } finally {
         setBusy(false);
       }
