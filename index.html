@@ -136,10 +136,19 @@
       box-shadow: var(--shadow-card);
     }
 
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
     .card-heading {
       font-size: 16px;
       font-weight: 700;
-      margin: 0 0 12px 0;
+      margin: 0;
     }
 
     .stack {
@@ -152,6 +161,7 @@
       display: flex;
       gap: 10px;
       align-items: stretch;
+      flex-wrap: wrap;
     }
 
     .custom-plan-bar {
@@ -179,7 +189,7 @@
 
     @media (min-width: 640px) {
       .filter-bar {
-        grid-template-columns: 1.3fr 1fr 1fr 1fr auto;
+        grid-template-columns: 1.3fr 1fr 1fr 1fr 1fr auto;
         align-items: end;
       }
     }
@@ -213,6 +223,10 @@
       padding: 10px 12px;
       line-height: 1.45;
       resize: vertical;
+    }
+
+    textarea.notes-input {
+      min-height: 76px;
     }
 
     input:focus, select:focus, textarea:focus {
@@ -305,6 +319,12 @@
       background: var(--surface-2);
     }
 
+    .btn-ghost.active-toggle {
+      background: var(--accent-soft);
+      border-color: #93c5fd;
+      color: var(--accent);
+    }
+
     .btn-danger {
       min-height: 38px;
       padding: 6px 14px;
@@ -323,15 +343,83 @@
       pointer-events: none;
     }
 
-    .camera-preview {
-      width: 100%;
-      max-height: 220px;
-      object-fit: contain;
+    .photo-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+      gap: 10px;
+    }
+
+    .photo-thumb-wrap {
+      position: relative;
       border-radius: 12px;
+      overflow: hidden;
       border: 1px solid var(--border);
       background: var(--surface-2);
       box-shadow: var(--shadow-subcard);
-      display: none;
+    }
+
+    .photo-thumb-img {
+      width: 100%;
+      height: 115px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-thumb-remove {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 28px;
+      min-width: 28px;
+      height: 28px;
+      min-height: 28px;
+      padding: 0;
+      font-size: 15px;
+      border-radius: 999px;
+      background: rgba(20, 24, 32, 0.78);
+      border-color: rgba(255, 255, 255, 0.35);
+      color: #ffffff;
+    }
+
+    .tag-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .tag-chip {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .tag-chip.selected {
+      background: var(--accent-soft);
+      border-color: #93c5fd;
+      color: var(--accent);
+    }
+
+    .tag-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .tag-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
     }
 
     .day-card {
@@ -349,15 +437,38 @@
       box-shadow: 0 4px 12px rgba(29, 78, 216, 0.08);
     }
 
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
     .day-date {
       font-size: 14px;
       font-weight: 700;
       color: var(--muted);
-      margin-bottom: 8px;
     }
 
     .day-card.today .day-date {
       color: var(--accent);
+    }
+
+    .day-toggle-btn {
+      min-height: 28px;
+      padding: 2px 10px;
+      font-size: 12px;
+      background: var(--surface-2);
+      color: var(--muted);
+      box-shadow: none;
+    }
+
+    .day-body {
+      margin-top: 8px;
+    }
+
+    .day-card.collapsed .day-body {
+      display: none;
     }
 
     .empty-day {
@@ -426,16 +537,17 @@
     .meal-controls {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .mini-btn {
-      width: 36px;
-      min-width: 36px;
-      height: 36px;
-      min-height: 36px;
+      width: 34px;
+      min-width: 34px;
+      height: 34px;
+      min-height: 34px;
       padding: 0;
-      font-size: 16px;
+      font-size: 15px;
       border-radius: 10px;
       background: var(--surface);
       border-color: var(--border);
@@ -453,7 +565,7 @@
       font-size: 12px;
       font-weight: 700;
       color: var(--muted);
-      min-width: 58px;
+      min-width: 54px;
       text-align: center;
     }
 
@@ -461,6 +573,29 @@
       border-color: #fca5a5;
       color: var(--danger);
       background: #fff5f5;
+    }
+
+    .move-copy-panel {
+      width: 100%;
+      margin-top: 6px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(29, 78, 216, 0.25);
+      display: none;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .move-copy-panel.open {
+      display: flex;
+    }
+
+    .move-copy-panel input[type="date"] {
+      width: auto;
+      min-height: 36px;
+      padding: 4px 10px;
+      font-size: 14px;
+      background: var(--surface);
     }
 
     .recipe-card {
@@ -561,6 +696,19 @@
       line-height: 1.65;
     }
 
+    .modal-sheet.cook-mode .steps-box {
+      font-size: 19px;
+      line-height: 1.8;
+      padding: 16px;
+      background: #ffffff;
+      border-color: #93c5fd;
+    }
+
+    .modal-sheet.cook-mode .detail-box:not(.steps-box) {
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
     .edit-box {
       background: var(--surface-2);
       border: 1px solid var(--border);
@@ -621,12 +769,13 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       padding: 14px 16px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
       flex-shrink: 0;
+      flex-wrap: wrap;
     }
 
     .modal-title {
@@ -668,7 +817,6 @@
       border-top: 1px solid var(--border);
     }
 
-    /* Schwebende transparente Glas-Pill-Menüleiste unten */
     .floating-nav-wrap {
       position: fixed;
       left: 0;
@@ -778,7 +926,13 @@
   <main class="container">
     <section id="planView" class="view active">
       <div class="card">
-        <h2 class="card-heading">Essensplan (nächste 14 Tage)</h2>
+        <div class="card-header-row">
+          <h2 class="card-heading">Essensplan (nächste 14 Tage)</h2>
+          <div class="row-split" style="gap:6px;">
+            <button type="button" id="jumpTodayBtn" class="btn-ghost">Heute</button>
+            <button type="button" id="toggleAllDaysBtn" class="btn-ghost">Alle einklappen</button>
+          </div>
+        </div>
 
         <div class="custom-plan-bar">
           <div>
@@ -805,6 +959,19 @@
           <div>
             <label for="recipeSearch">Suche (Name oder Zutat)</label>
             <input type="search" id="recipeSearch" placeholder="z. B. Pasta, Hähnchen, Tomate..." />
+          </div>
+          <div>
+            <label for="tagFilter">Kategorie / Tag</label>
+            <select id="tagFilter">
+              <option value="all">Alle Kategorien</option>
+              <option value="Abendessen">Abendessen</option>
+              <option value="Mittagessen">Mittagessen</option>
+              <option value="Dessert">Dessert</option>
+              <option value="Schnell">Schnell (&lt;20 Min.)</option>
+              <option value="Familie">Familie</option>
+              <option value="Ofen/Blech">Ofen/Blech</option>
+              <option value="Vegetarisch">Vegetarisch</option>
+            </select>
           </div>
           <div>
             <label for="starFilter">Sterne-Filter</label>
@@ -854,13 +1021,13 @@
             <label for="recipeUrl">Rezept-URL</label>
             <input type="url" id="recipeUrl" placeholder="https://..." />
           </div>
-          <div class="recipe-sub">Menge und Einheit (Portionen, Ganzes oder Stücke) werden automatisch von der Seite übernommen.</div>
+          <div class="recipe-sub">Menge, Einheit und passende Kategorien werden automatisch übernommen.</div>
           <button type="button" id="addBtn" class="btn-primary">Analysieren &amp; Speichern</button>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="card-heading">Rezept per Kamera</h2>
+        <h2 class="card-heading">Rezept per Kamera (1 oder mehrere Fotos)</h2>
         <div class="stack">
           <input type="file" id="recipePhoto" class="hidden-file-input" accept="image/*" capture="environment" />
           <button type="button" id="openCameraBtn" class="btn-camera">
@@ -868,11 +1035,56 @@
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <span id="openCameraLabel">Kamera öffnen</span>
+            <span id="openCameraLabel">Kamera öffnen / Foto hinzufügen</span>
           </button>
-          <img id="photoPreview" class="camera-preview" alt="Aufgenommene Buchseite" />
-          <div id="photoStatusText" class="recipe-sub">Buchseite fotografieren – Gemini liest Titel, Mengen, Einheit und Schritte aus.</div>
-          <button type="button" id="addPhotoBtn" class="btn-primary">Foto auslesen &amp; Speichern</button>
+          <div id="photoGallery" class="photo-gallery"></div>
+          <div id="photoStatusText" class="recipe-sub">Einzelne Seite oder mehrere Buchseiten nacheinander aufnehmen – Gemini liest sie zusammen aus.</div>
+          <button type="button" id="addPhotoBtn" class="btn-primary">Fotos auslesen &amp; Speichern</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-heading">Eigenes Rezept eintippen</h2>
+        <div class="stack">
+          <div>
+            <label for="manualTitle">Titel</label>
+            <input type="text" id="manualTitle" placeholder="z. B. Omas Pfannkuchen" />
+          </div>
+          <div class="row-split">
+            <div style="flex:1;min-width:140px;">
+              <label for="manualUnit">Einheit</label>
+              <select id="manualUnit">
+                <option value="Port.">Portionen (Port.)</option>
+                <option value="Ganzes">Ganzes Gericht (Ganzes)</option>
+                <option value="Stücke">Stücke</option>
+              </select>
+            </div>
+            <div>
+              <label for="manualServings">Menge</label>
+              <input type="number" id="manualServings" class="num-input" min="0.5" max="100" step="0.5" value="2" />
+            </div>
+            <div>
+              <label for="manualDuration">Minuten</label>
+              <input type="number" id="manualDuration" class="num-input" min="0" max="999" step="1" value="20" />
+            </div>
+          </div>
+          <div>
+            <label>Kategorien / Tags</label>
+            <div id="manualTagChips" class="tag-chip-row"></div>
+          </div>
+          <div>
+            <label for="manualIngredients">Zutaten (eine pro Zeile)</label>
+            <textarea id="manualIngredients" placeholder="200 g Mehl&#10;300 ml Milch&#10;2 Eier"></textarea>
+          </div>
+          <div>
+            <label for="manualSteps">Zubereitung</label>
+            <textarea id="manualSteps" placeholder="1. Teig anrühren...&#10;&#10;2. In der Pfanne ausbacken..."></textarea>
+          </div>
+          <div>
+            <label for="manualNotes">Eigene Notizen (optional)</label>
+            <textarea id="manualNotes" class="notes-input" placeholder="z. B. Etwas weniger Zucker, Vanillezucker dazu..."></textarea>
+          </div>
+          <button type="button" id="addManualBtn" class="btn-primary">Rezept speichern</button>
         </div>
       </div>
     </section>
@@ -880,14 +1092,18 @@
 
   <!-- Rezept-Fenster (Modal) -->
   <div id="recipeModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
-    <div class="modal-sheet">
+    <div id="modalSheet" class="modal-sheet">
       <div class="modal-header">
         <div style="min-width:0;flex:1;">
           <h2 id="detailTitle" class="modal-title"></h2>
           <div id="detailMeta" class="recipe-sub"></div>
+          <div id="detailTags" class="tag-badge-row"></div>
         </div>
-        <button type="button" id="editToggleBtn" class="btn-ghost">Bearbeiten</button>
-        <button type="button" id="closeDetailBtn" class="modal-close-btn" aria-label="Schließen">×</button>
+        <div class="row-split" style="gap:6px;flex-shrink:0;">
+          <button type="button" id="cookModeBtn" class="btn-ghost">Koch-Modus</button>
+          <button type="button" id="editToggleBtn" class="btn-ghost">Bearbeiten</button>
+          <button type="button" id="closeDetailBtn" class="modal-close-btn" aria-label="Schließen">×</button>
+        </div>
       </div>
 
       <div id="modalBody" class="modal-body">
@@ -900,7 +1116,7 @@
               <input type="text" id="editTitle" />
             </div>
             <div class="row-split">
-              <div style="flex:1;">
+              <div style="flex:1;min-width:140px;">
                 <label for="editUnit">Einheit</label>
                 <select id="editUnit">
                   <option value="Port.">Portionen (Port.)</option>
@@ -918,12 +1134,24 @@
               </div>
             </div>
             <div>
+              <label>Kategorien / Tags</label>
+              <div id="editTagChips" class="tag-chip-row"></div>
+            </div>
+            <div>
+              <label for="editCustomTags">Weitere Tags (kommagetrennt)</label>
+              <input type="text" id="editCustomTags" placeholder="z. B. Meal-Prep, Grillen..." />
+            </div>
+            <div>
               <label for="editIngredients">Zutaten (eine pro Zeile)</label>
               <textarea id="editIngredients"></textarea>
             </div>
             <div>
               <label for="editSteps">Zubereitung</label>
               <textarea id="editSteps"></textarea>
+            </div>
+            <div>
+              <label for="editNotes">Notizen</label>
+              <textarea id="editNotes" class="notes-input"></textarea>
             </div>
             <div class="row-split">
               <button type="button" id="saveEditBtn" class="btn-primary" style="flex:1;">Änderungen speichern</button>
@@ -957,6 +1185,12 @@
 
           <div class="recipe-sub"><strong>Zubereitung</strong></div>
           <div id="detailSteps" class="detail-box steps-box"></div>
+
+          <div class="stack" style="margin-top:6px;">
+            <label for="detailNotesInput"><strong>Notizen zum Rezept</strong></label>
+            <textarea id="detailNotesInput" class="notes-input" placeholder="z. B. Weniger Salz, 200 °C Umluft, beim nächsten Mal mehr Soße..."></textarea>
+            <button type="button" id="saveNotesBtn" class="btn-ghost" style="align-self:flex-start;">Notiz speichern</button>
+          </div>
 
           <div class="modal-footer-actions">
             <a id="detailUrl" href="#" target="_blank" rel="noopener" style="color:var(--accent);font-size:14px;font-weight:600;">Originalrezept öffnen</a>
@@ -1000,12 +1234,28 @@
     const API_URL = 'https://script.google.com/macros/s/AKfycbyI8ZYz6yJe2Ubay1enh2lAbuQkS8f78T7vE7ZnXrm3yYLjgE1QNyjBV_Zu3aW7sIE/exec';
     const APP_TOKEN = 'rzp-7f92a4c8e1b630d5';
 
+    const PRESET_TAGS = [
+      'Abendessen',
+      'Mittagessen',
+      'Dessert',
+      'Schnell (<20 Min.)',
+      'Familie',
+      'Ofen/Blech',
+      'Vegetarisch'
+    ];
+
     let state = { recipes: [], plan: [] };
     let selectedRecipeId = null;
     let activeServingsOverride = null;
-    let preparedImageData = null;
+    let preparedPhotos = [];
     let modalHistoryPushed = false;
     let isEditingRecipe = false;
+    let isCookMode = false;
+    let wakeLockSentinel = null;
+    let collapsedDates = {};
+    let activeMoveCopyPlanId = null;
+    let manualSelectedTags = [];
+    let editSelectedTags = [];
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -1050,12 +1300,14 @@
       document.getElementById('addBtn').disabled = busy;
       document.getElementById('openCameraBtn').disabled = busy;
       document.getElementById('addPhotoBtn').disabled = busy;
+      document.getElementById('addManualBtn').disabled = busy;
       document.getElementById('customPlanBtn').disabled = busy;
       document.getElementById('refreshBtn').disabled = busy;
       document.getElementById('planSaveBtn').disabled = busy;
       document.getElementById('deleteBtn').disabled = busy;
       document.getElementById('randomRecipeBtn').disabled = busy;
       document.getElementById('saveEditBtn').disabled = busy;
+      document.getElementById('saveNotesBtn').disabled = busy;
     }
 
     async function apiGetData() {
@@ -1143,6 +1395,36 @@
       return '★'.repeat(r) + '☆'.repeat(5 - r);
     }
 
+    function renderTagChipGroup(containerId, selectedArr, onToggle) {
+      const wrap = document.getElementById(containerId);
+      wrap.innerHTML = '';
+      PRESET_TAGS.forEach(tag => {
+        const isSel = selectedArr.some(t => t.toLowerCase() === tag.toLowerCase());
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'tag-chip' + (isSel ? ' selected' : '');
+        chip.textContent = tag;
+        chip.addEventListener('click', () => onToggle(tag));
+        wrap.appendChild(chip);
+      });
+    }
+
+    function initTagSelectors() {
+      renderTagChipGroup('manualTagChips', manualSelectedTags, tag => {
+        const idx = manualSelectedTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
+        if (idx === -1) manualSelectedTags.push(tag);
+        else manualSelectedTags.splice(idx, 1);
+        initTagSelectors();
+      });
+
+      renderTagChipGroup('editTagChips', editSelectedTags, tag => {
+        const idx = editSelectedTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
+        if (idx === -1) editSelectedTags.push(tag);
+        else editSelectedTags.splice(idx, 1);
+        renderTagChipGroup('editTagChips', editSelectedTags, arguments.callee);
+      });
+    }
+
     function compressImageFile(file, maxSide = 1400, quality = 0.82) {
       return new Promise((resolve, reject) => {
         if (file.size > 20 * 1024 * 1024) {
@@ -1185,39 +1467,72 @@
       });
     }
 
+    function renderPhotoGallery() {
+      const gallery = document.getElementById('photoGallery');
+      const statusText = document.getElementById('photoStatusText');
+      const label = document.getElementById('openCameraLabel');
+      gallery.innerHTML = '';
+
+      if (!preparedPhotos.length) {
+        label.textContent = 'Kamera öffnen / Foto hinzufügen';
+        statusText.textContent = 'Einzelne Seite oder mehrere Buchseiten nacheinander aufnehmen – Gemini liest sie zusammen aus.';
+        return;
+      }
+
+      label.textContent = `Weiteres Foto aufnehmen (${preparedPhotos.length})`;
+      statusText.textContent = `${preparedPhotos.length} Foto(s) bereit – wird in einem Rutsch ausgelesen.`;
+
+      preparedPhotos.forEach((photo, idx) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'photo-thumb-wrap';
+
+        const img = document.createElement('img');
+        img.className = 'photo-thumb-img';
+        img.src = photo.dataUrl;
+        img.alt = `Buchseite ${idx + 1}`;
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'photo-thumb-remove';
+        delBtn.textContent = '×';
+        delBtn.title = 'Foto entfernen';
+        delBtn.addEventListener('click', () => {
+          preparedPhotos.splice(idx, 1);
+          renderPhotoGallery();
+        });
+
+        wrap.appendChild(img);
+        wrap.appendChild(delBtn);
+        gallery.appendChild(wrap);
+      });
+    }
+
     function resetCameraUi() {
       document.getElementById('recipePhoto').value = '';
-      const preview = document.getElementById('photoPreview');
-      preview.style.display = 'none';
-      preview.removeAttribute('src');
-      document.getElementById('openCameraLabel').textContent = 'Kamera öffnen';
-      document.getElementById('photoStatusText').textContent =
-        'Buchseite fotografieren – Gemini liest Titel, Mengen, Einheit und Schritte aus.';
-      preparedImageData = null;
+      preparedPhotos = [];
+      renderPhotoGallery();
     }
 
     document.getElementById('openCameraBtn').addEventListener('click', () => {
+      document.getElementById('recipePhoto').value = '';
       document.getElementById('recipePhoto').click();
     });
 
     document.getElementById('recipePhoto').addEventListener('change', async ev => {
       const file = ev.target.files && ev.target.files[0];
-      const preview = document.getElementById('photoPreview');
-      preparedImageData = null;
+      if (!file) return;
 
-      if (!file) {
-        resetCameraUi();
+      if (preparedPhotos.length >= 4) {
+        setSyncState('Max. 4 Fotos', 'err');
         return;
       }
 
       try {
         setSyncState('Bild prüfe...', 'busy');
-        preparedImageData = await compressImageFile(file);
-        preview.src = preparedImageData.dataUrl;
-        preview.style.display = 'block';
-        document.getElementById('openCameraLabel').textContent = 'Neu aufnehmen';
-        document.getElementById('photoStatusText').textContent = 'Foto bereit zum Auslesen.';
-        setSyncState('Foto bereit', 'ok');
+        const compressed = await compressImageFile(file);
+        preparedPhotos.push(compressed);
+        renderPhotoGallery();
+        setSyncState(`${preparedPhotos.length} Foto bereit`, 'ok');
       } catch (err) {
         setSyncState(err.message === 'Foto zu groß' ? 'Foto zu groß' : 'Bildfehler', 'err');
       }
@@ -1242,6 +1557,31 @@
       }
     }
 
+    async function applyMoveOrCopy(planId, targetDateStr, mode) {
+      if (!targetDateStr) {
+        setSyncState('Datum fehlt', 'err');
+        return;
+      }
+      setBusy(true);
+      setSyncState(mode === 'copy' ? 'Kopiere...' : 'Verschiebe...', 'busy');
+      try {
+        state = await apiPostAction({
+          action: 'moveOrCopyPlanEntry',
+          planId,
+          targetDateStr,
+          mode
+        });
+        activeMoveCopyPlanId = null;
+        renderPlan();
+        renderRecipes();
+        markUpdatedNow(mode === 'copy' ? 'Kopiert' : 'Verschoben');
+      } catch (err) {
+        setSyncState(classifyErrorHint(err), 'err');
+      } finally {
+        setBusy(false);
+      }
+    }
+
     function renderPlan() {
       const wrap = document.getElementById('planList');
       wrap.innerHTML = '';
@@ -1254,6 +1594,8 @@
         document.getElementById('customPlanDate').value = todayIso;
       }
 
+      let anyCollapsed = false;
+
       for (let i = 0; i < 14; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
@@ -1264,20 +1606,42 @@
           month: '2-digit'
         });
 
+        const isCollapsed = Boolean(collapsedDates[iso]);
+        if (isCollapsed) anyCollapsed = true;
+
         const card = document.createElement('div');
-        card.className = 'day-card' + (iso === todayIso ? ' today' : '');
+        card.className = 'day-card' + (iso === todayIso ? ' today' : '') + (isCollapsed ? ' collapsed' : '');
+        card.dataset.date = iso;
+
+        const header = document.createElement('div');
+        header.className = 'day-header';
 
         const head = document.createElement('div');
         head.className = 'day-date';
         head.textContent = iso === todayIso ? `${label} (Heute)` : label;
-        card.appendChild(head);
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.type = 'button';
+        toggleBtn.className = 'day-toggle-btn';
+        toggleBtn.textContent = isCollapsed ? 'Aufklappen' : 'Einklappen';
+        toggleBtn.addEventListener('click', () => {
+          collapsedDates[iso] = !collapsedDates[iso];
+          renderPlan();
+        });
+
+        header.appendChild(head);
+        header.appendChild(toggleBtn);
+        card.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'day-body';
 
         const entries = state.plan.filter(p => p.date === iso);
         if (!entries.length) {
           const empty = document.createElement('div');
           empty.className = 'empty-day';
           empty.textContent = 'Noch nichts geplant';
-          card.appendChild(empty);
+          body.appendChild(empty);
         } else {
           entries.forEach(p => {
             const hasRecipe = Boolean(p.recipeId);
@@ -1337,6 +1701,17 @@
               patchPlanEntry(p.planId, { servings: nextAmt, done: p.done });
             });
 
+            const moveCopyToggleBtn = document.createElement('button');
+            moveCopyToggleBtn.type = 'button';
+            moveCopyToggleBtn.className = 'mini-btn';
+            moveCopyToggleBtn.textContent = '⇄';
+            moveCopyToggleBtn.title = 'Auf anderen Tag verschieben oder kopieren';
+            moveCopyToggleBtn.addEventListener('click', ev => {
+              ev.stopPropagation();
+              activeMoveCopyPlanId = activeMoveCopyPlanId === p.planId ? null : p.planId;
+              renderPlan();
+            });
+
             const doneBtn = document.createElement('button');
             doneBtn.type = 'button';
             doneBtn.className = 'mini-btn' + (p.done ? ' done-active' : '');
@@ -1370,18 +1745,82 @@
             controls.appendChild(minusBtn);
             controls.appendChild(servLabel);
             controls.appendChild(plusBtn);
+            controls.appendChild(moveCopyToggleBtn);
             controls.appendChild(doneBtn);
             controls.appendChild(del);
 
             row.appendChild(titleWrap);
             row.appendChild(controls);
-            card.appendChild(row);
+
+            const mcPanel = document.createElement('div');
+            mcPanel.className = 'move-copy-panel' + (activeMoveCopyPlanId === p.planId ? ' open' : '');
+
+            const datePicker = document.createElement('input');
+            datePicker.type = 'date';
+            const nextDay = new Date(d);
+            nextDay.setDate(d.getDate() + 1);
+            datePicker.value = toIsoDate(nextDay);
+
+            const moveBtn = document.createElement('button');
+            moveBtn.type = 'button';
+            moveBtn.className = 'btn-ghost';
+            moveBtn.textContent = 'Verschieben';
+            moveBtn.addEventListener('click', ev => {
+              ev.stopPropagation();
+              applyMoveOrCopy(p.planId, datePicker.value, 'move');
+            });
+
+            const copyBtn = document.createElement('button');
+            copyBtn.type = 'button';
+            copyBtn.className = 'btn-ghost';
+            copyBtn.textContent = 'Kopieren';
+            copyBtn.addEventListener('click', ev => {
+              ev.stopPropagation();
+              applyMoveOrCopy(p.planId, datePicker.value, 'copy');
+            });
+
+            mcPanel.appendChild(datePicker);
+            mcPanel.appendChild(moveBtn);
+            mcPanel.appendChild(copyBtn);
+            row.appendChild(mcPanel);
+
+            body.appendChild(row);
           });
         }
 
+        card.appendChild(body);
         wrap.appendChild(card);
       }
+
+      document.getElementById('toggleAllDaysBtn').textContent = anyCollapsed ? 'Alle aufklappen' : 'Alle einklappen';
     }
+
+    document.getElementById('jumpTodayBtn').addEventListener('click', () => {
+      const todayIso = toIsoDate(new Date());
+      collapsedDates[todayIso] = false;
+      renderPlan();
+      const todayCard = document.querySelector(`.day-card[data-date="${todayIso}"]`);
+      if (todayCard) {
+        const y = todayCard.getBoundingClientRect().top + window.scrollY - 76;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      }
+    });
+
+    document.getElementById('toggleAllDaysBtn').addEventListener('click', () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const dates = [];
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        dates.push(toIsoDate(d));
+      }
+      const anyCollapsed = dates.some(iso => Boolean(collapsedDates[iso]));
+      dates.forEach(iso => {
+        collapsedDates[iso] = !anyCollapsed;
+      });
+      renderPlan();
+    });
 
     function matchesStarFilter(rating, filterVal) {
       const r = Number(rating || 0);
@@ -1396,6 +1835,13 @@
       const maxMin = Number(timeVal);
       const dur = Number(durationMin || 0);
       return dur > 0 && dur <= maxMin;
+    }
+
+    function matchesTagFilter(tags, tagVal) {
+      if (!tagVal || tagVal === 'all') return true;
+      const list = Array.isArray(tags) ? tags : [];
+      const needle = tagVal.toLowerCase();
+      return list.some(t => String(t).toLowerCase().indexOf(needle) !== -1);
     }
 
     function sortRecipesList(list, sortVal) {
@@ -1416,15 +1862,17 @@
 
     function getFilteredRecipes() {
       const query = (document.getElementById('recipeSearch').value || '').trim().toLowerCase();
+      const tagVal = document.getElementById('tagFilter').value || 'all';
       const filterVal = document.getElementById('starFilter').value || 'all';
       const timeVal = document.getElementById('timeFilter').value || 'all';
       const sortVal = document.getElementById('sortSelect').value || 'default';
 
       const filtered = state.recipes.filter(r => {
+        if (!matchesTagFilter(r.tags, tagVal)) return false;
         if (!matchesStarFilter(r.rating, filterVal)) return false;
         if (!matchesTimeFilter(r.durationMin, timeVal)) return false;
         if (!query) return true;
-        const hay = `${r.title} ${r.ingredients}`.toLowerCase();
+        const hay = `${r.title} ${r.ingredients} ${(r.tags || []).join(' ')} ${r.notes || ''}`.toLowerCase();
         return hay.indexOf(query) !== -1;
       });
 
@@ -1473,9 +1921,54 @@
         card.appendChild(name);
         card.appendChild(stars);
         card.appendChild(sub);
+
+        if (Array.isArray(r.tags) && r.tags.length > 0) {
+          const badgeRow = document.createElement('div');
+          badgeRow.className = 'tag-badge-row';
+          r.tags.forEach(t => {
+            const b = document.createElement('span');
+            b.className = 'tag-badge';
+            b.textContent = t;
+            badgeRow.appendChild(b);
+          });
+          card.appendChild(badgeRow);
+        }
+
         wrap.appendChild(card);
       });
     }
+
+    async function setCookMode(enabled) {
+      isCookMode = Boolean(enabled);
+      const sheet = document.getElementById('modalSheet');
+      const btn = document.getElementById('cookModeBtn');
+      sheet.classList.toggle('cook-mode', isCookMode);
+      btn.classList.toggle('active-toggle', isCookMode);
+      btn.textContent = isCookMode ? 'Koch-Modus: AN' : 'Koch-Modus';
+
+      if (isCookMode) {
+        if ('wakeLock' in navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function') {
+          try {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+          } catch (_) {
+            wakeLockSentinel = null;
+          }
+        }
+      } else if (wakeLockSentinel) {
+        try {
+          await wakeLockSentinel.release();
+        } catch (_) {}
+        wakeLockSentinel = null;
+      }
+    }
+
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible' && isCookMode && 'wakeLock' in navigator) {
+        try {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+        } catch (_) {}
+      }
+    });
 
     function setEditMode(openEdit) {
       isEditingRecipe = Boolean(openEdit);
@@ -1491,6 +1984,19 @@
         document.getElementById('editDuration').value = Number(r.durationMin || 0);
         document.getElementById('editIngredients').value = r.ingredients || '';
         document.getElementById('editSteps').value = r.steps || '';
+        document.getElementById('editNotes').value = r.notes || '';
+
+        const existingTags = Array.isArray(r.tags) ? r.tags : [];
+        editSelectedTags = existingTags.filter(t => PRESET_TAGS.some(p => p.toLowerCase() === t.toLowerCase()));
+        const extraTags = existingTags.filter(t => !PRESET_TAGS.some(p => p.toLowerCase() === t.toLowerCase()));
+        document.getElementById('editCustomTags').value = extraTags.join(', ');
+        renderTagChipGroup('editTagChips', editSelectedTags, tag => {
+          const idx = editSelectedTags.findIndex(t => t.toLowerCase() === tag.toLowerCase());
+          if (idx === -1) editSelectedTags.push(tag);
+          else editSelectedTags.splice(idx, 1);
+          setEditMode(true);
+        });
+
         editForm.classList.add('open');
         viewSection.style.display = 'none';
         editBtn.textContent = 'Ansicht';
@@ -1502,6 +2008,7 @@
     }
 
     function hideRecipeModalDom() {
+      setCookMode(false);
       isEditingRecipe = false;
       document.getElementById('editForm').classList.remove('open');
       document.getElementById('viewSection').style.display = 'block';
@@ -1541,6 +2048,10 @@
       }
     });
 
+    document.getElementById('cookModeBtn').addEventListener('click', () => {
+      setCookMode(!isCookMode);
+    });
+
     document.getElementById('editToggleBtn').addEventListener('click', () => {
       setEditMode(!isEditingRecipe);
     });
@@ -1557,6 +2068,11 @@
         return;
       }
 
+      const customRaw = document.getElementById('editCustomTags').value || '';
+      const mergedTags = editSelectedTags.concat(
+        customRaw.split(',').map(s => s.trim()).filter(Boolean)
+      );
+
       setBusy(true);
       setSyncState('Speichere...', 'busy');
       try {
@@ -1568,8 +2084,10 @@
             unitLabel: document.getElementById('editUnit').value,
             servings: document.getElementById('editServings').value,
             durationMin: document.getElementById('editDuration').value,
+            tags: mergedTags,
             ingredients: document.getElementById('editIngredients').value,
-            steps: document.getElementById('editSteps').value
+            steps: document.getElementById('editSteps').value,
+            notes: document.getElementById('editNotes').value
           }
         });
         setEditMode(false);
@@ -1577,6 +2095,27 @@
         renderPlan();
         renderRecipes();
         markUpdatedNow('Gespeichert');
+      } catch (err) {
+        setSyncState(classifyErrorHint(err), 'err');
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    document.getElementById('saveNotesBtn').addEventListener('click', async () => {
+      if (!selectedRecipeId) return;
+      const notesVal = document.getElementById('detailNotesInput').value;
+      setBusy(true);
+      setSyncState('Notiz speichert...', 'busy');
+      try {
+        state = await apiPostAction({
+          action: 'updateRecipeNotes',
+          recipeId: selectedRecipeId,
+          notes: notesVal
+        });
+        populateRecipeModal(selectedRecipeId, activeServingsOverride);
+        renderRecipes();
+        markUpdatedNow('Notiz gespeichert');
       } catch (err) {
         setSyncState(classifyErrorHint(err), 'err');
       } finally {
@@ -1635,6 +2174,17 @@
         `${formatAmount(shownAmt)} ${unit} • ${r.durationMin} Min.` +
         (r.lastEaten ? ` • Zuletzt: ${r.lastEaten}` : '');
 
+      const tagsWrap = document.getElementById('detailTags');
+      tagsWrap.innerHTML = '';
+      if (Array.isArray(r.tags) && r.tags.length > 0) {
+        r.tags.forEach(t => {
+          const b = document.createElement('span');
+          b.className = 'tag-badge';
+          b.textContent = t;
+          tagsWrap.appendChild(b);
+        });
+      }
+
       const heroImg = document.getElementById('detailImage');
       if (r.imageUrl) {
         heroImg.src = r.imageUrl;
@@ -1650,6 +2200,7 @@
       document.getElementById('detailIngredients').textContent =
         scaleIngredientsText(r.ingredients, baseAmt, shownAmt);
       document.getElementById('detailSteps').textContent = formatStepsWithSpacers(r.steps);
+      document.getElementById('detailNotesInput').value = r.notes || '';
 
       const urlLink = document.getElementById('detailUrl');
       if (/^https?:\/\//i.test(r.url || '')) {
@@ -1675,6 +2226,7 @@
     function openRecipeModal(id, customServings = null) {
       if (!populateRecipeModal(id, customServings)) return;
 
+      setCookMode(false);
       setEditMode(false);
       const modal = document.getElementById('recipeModal');
       const wasOpen = modal.classList.contains('open');
@@ -1691,6 +2243,7 @@
 
     document.getElementById('closeDetailBtn').addEventListener('click', closeRecipeModal);
     document.getElementById('recipeSearch').addEventListener('input', renderRecipes);
+    document.getElementById('tagFilter').addEventListener('change', renderRecipes);
     document.getElementById('starFilter').addEventListener('change', renderRecipes);
     document.getElementById('timeFilter').addEventListener('change', renderRecipes);
     document.getElementById('sortSelect').addEventListener('change', renderRecipes);
@@ -1774,20 +2327,66 @@
     });
 
     document.getElementById('addPhotoBtn').addEventListener('click', async () => {
-      if (!preparedImageData || !preparedImageData.imageBase64) {
+      if (!preparedPhotos.length) {
         setSyncState('Foto fehlt', 'err');
         return;
       }
 
       setBusy(true);
-      setSyncState('Lese Foto...', 'busy');
+      setSyncState('Lese Fotos...', 'busy');
       try {
         state = await apiPostAction({
           action: 'addRecipeFromImage',
-          imageBase64: preparedImageData.imageBase64,
-          mimeType: preparedImageData.mimeType
+          imageBase64: preparedPhotos[0].imageBase64,
+          mimeType: preparedPhotos[0].mimeType,
+          images: preparedPhotos.map(p => ({
+            imageBase64: p.imageBase64,
+            mimeType: p.mimeType
+          }))
         });
         resetCameraUi();
+        renderPlan();
+        renderRecipes();
+        markUpdatedNow('Gespeichert');
+        switchView('recipesView');
+      } catch (err) {
+        setSyncState(classifyErrorHint(err), 'err');
+      } finally {
+        setBusy(false);
+      }
+    });
+
+    document.getElementById('addManualBtn').addEventListener('click', async () => {
+      const title = document.getElementById('manualTitle').value.trim();
+      if (!title) {
+        setSyncState('Titel fehlt', 'err');
+        return;
+      }
+
+      setBusy(true);
+      setSyncState('Speichere...', 'busy');
+      try {
+        state = await apiPostAction({
+          action: 'addManualRecipe',
+          recipe: {
+            title,
+            unitLabel: document.getElementById('manualUnit').value,
+            servings: document.getElementById('manualServings').value,
+            durationMin: document.getElementById('manualDuration').value,
+            tags: manualSelectedTags.slice(),
+            ingredients: document.getElementById('manualIngredients').value,
+            steps: document.getElementById('manualSteps').value,
+            notes: document.getElementById('manualNotes').value
+          }
+        });
+
+        document.getElementById('manualTitle').value = '';
+        document.getElementById('manualIngredients').value = '';
+        document.getElementById('manualSteps').value = '';
+        document.getElementById('manualNotes').value = '';
+        manualSelectedTags = [];
+        initTagSelectors();
+
         renderPlan();
         renderRecipes();
         markUpdatedNow('Gespeichert');
@@ -1842,7 +2441,11 @@
       }
     });
 
-    window.addEventListener('DOMContentLoaded', loadData);
+    window.addEventListener('DOMContentLoaded', () => {
+      initTagSelectors();
+      renderPhotoGallery();
+      loadData();
+    });
   </script>
 </body>
 </html>
