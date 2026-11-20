@@ -3,25 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f1115" />
+  <meta name="theme-color" content="#f8fafc" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <title>Rezepte &amp; Essensplan</title>
   <style>
     :root {
-      --bg: #0f1115;
-      --surface: #171a21;
-      --surface-2: #1f242d;
-      --border: #2c3340;
-      --text: #f4f6f8;
-      --muted: #9aa4b2;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --danger: #ef4444;
-      --ok: #22c55e;
-      --star: #facc15;
+      --bg: #f4f6fa;
+      --surface: #ffffff;
+      --surface-2: #edf1f7;
+      --surface-3: #e2e8f2;
+      --border: #d5dde8;
+      --text: #141820;
+      --muted: #5a6577;
+      --accent: #1d4ed8;
+      --accent-hover: #1e40af;
+      --accent-soft: #dbeafe;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      --ok: #15803d;
+      --ok-soft: #dcfce7;
+      --star: #d97706;
+      --star-soft: #fef3c7;
       --nav-h: 64px;
+      --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-modal: 0 12px 32px rgba(15, 23, 42, 0.22);
     }
 
     * {
@@ -37,7 +44,7 @@
       overflow-x: hidden;
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+      font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
       font-size: 16px;
       line-height: 1.45;
     }
@@ -59,7 +66,7 @@
       justify-content: space-between;
       gap: 10px;
       padding: 12px 16px;
-      background: rgba(15, 17, 21, 0.94);
+      background: rgba(248, 250, 252, 0.94);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
     }
@@ -67,6 +74,7 @@
     .topbar-title {
       font-size: 18px;
       font-weight: 700;
+      letter-spacing: -0.01em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -83,16 +91,24 @@
 
     .sync-stamp {
       font-size: 12px;
+      font-weight: 600;
       color: var(--muted);
       white-space: nowrap;
+      max-width: 135px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .sync-stamp.busy {
-      color: #93c5fd;
+      color: var(--accent);
+    }
+
+    .sync-stamp.ok {
+      color: var(--ok);
     }
 
     .sync-stamp.err {
-      color: #f87171;
+      color: var(--danger);
     }
 
     .container {
@@ -108,9 +124,10 @@
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 16px;
       margin-bottom: 14px;
+      box-shadow: var(--shadow-card);
     }
 
     .card-heading {
@@ -156,7 +173,7 @@
 
     @media (min-width: 640px) {
       .filter-bar {
-        grid-template-columns: 1.4fr 1fr 1fr auto;
+        grid-template-columns: 1.3fr 1fr 1fr 1fr auto;
         align-items: end;
       }
     }
@@ -164,22 +181,39 @@
     label {
       display: block;
       font-size: 13px;
+      font-weight: 500;
       color: var(--muted);
       margin-bottom: 4px;
     }
 
-    input, select, button {
+    input, select, textarea, button {
       font-family: inherit;
       font-size: 16px;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid var(--border);
-      min-height: 46px;
-      padding: 10px 12px;
       color: var(--text);
       background: var(--surface-2);
     }
 
-    input, select { width: 100%; }
+    input, select {
+      min-height: 46px;
+      padding: 10px 12px;
+      width: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 10px 12px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: var(--surface);
+    }
 
     input[type="file"] {
       padding: 8px;
@@ -187,8 +221,8 @@
     }
 
     input.num-input {
-      width: 96px;
-      min-width: 96px;
+      width: 98px;
+      min-width: 98px;
       text-align: center;
     }
 
@@ -199,11 +233,14 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      min-height: 44px;
+      padding: 10px 14px;
       touch-action: manipulation;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
     }
 
     button:disabled {
-      opacity: 0.55;
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
@@ -211,25 +248,36 @@
       width: 100%;
       background: var(--accent);
       border-color: var(--accent);
-      color: #fff;
+      color: #ffffff;
     }
 
-    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
 
     .btn-secondary {
       background: var(--accent);
       border-color: var(--accent);
-      color: #fff;
+      color: #ffffff;
       min-height: 46px;
       padding: 10px 16px;
     }
 
-    .btn-secondary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
 
     .btn-ghost {
       min-height: 36px;
-      padding: 6px 10px;
+      padding: 6px 12px;
       font-size: 13px;
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
       background: var(--surface-2);
     }
 
@@ -237,30 +285,33 @@
       min-height: 38px;
       padding: 6px 12px;
       font-size: 14px;
-      background: rgba(239, 68, 68, 0.14);
-      border-color: rgba(239, 68, 68, 0.5);
-      color: #fca5a5;
+      background: var(--danger-soft);
+      border-color: #fca5a5;
+      color: var(--danger);
     }
 
     .camera-preview {
       width: 100%;
       max-height: 220px;
       object-fit: contain;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid var(--border);
       background: var(--surface-2);
       display: none;
     }
 
     .day-card {
-      background: var(--surface-2);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 12px;
       margin-bottom: 10px;
     }
 
-    .day-card.today { border-color: var(--accent); }
+    .day-card.today {
+      border-color: var(--accent);
+      background: #f8fbff;
+    }
 
     .day-date {
       font-size: 14px;
@@ -269,12 +320,13 @@
       margin-bottom: 8px;
     }
 
-    .day-card.today .day-date { color: #93c5fd; }
+    .day-card.today .day-date {
+      color: var(--accent);
+    }
 
     .empty-day {
       font-size: 14px;
       color: var(--muted);
-      opacity: 0.75;
     }
 
     .meal-row {
@@ -283,23 +335,36 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      background: rgba(59, 130, 246, 0.16);
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      border-radius: 10px;
+      background: var(--accent-soft);
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
       padding: 8px 10px;
-      margin-top: 6px;
+      margin-top: 8px;
+    }
+
+    .meal-row.custom-meal {
+      background: var(--surface-2);
+      border-color: var(--border);
     }
 
     .meal-row.done {
-      opacity: 0.65;
-      background: rgba(34, 197, 94, 0.12);
-      border-color: rgba(34, 197, 94, 0.35);
+      opacity: 0.72;
+      background: var(--ok-soft);
+      border-color: #86efac;
+    }
+
+    .meal-title-wrap {
+      flex: 1 1 135px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
     .meal-title {
-      flex: 1 1 130px;
       font-size: 15px;
       font-weight: 600;
+      color: var(--text);
     }
 
     .meal-title.clickable {
@@ -308,49 +373,65 @@
 
     .meal-row.done .meal-title {
       text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .custom-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--surface-3);
+      color: var(--muted);
     }
 
     .meal-controls {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
     }
 
     .mini-btn {
-      width: 32px;
-      min-width: 32px;
-      height: 32px;
-      min-height: 32px;
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      min-height: 36px;
       padding: 0;
-      font-size: 15px;
-      border-radius: 8px;
-      background: rgba(0, 0, 0, 0.28);
+      font-size: 16px;
+      border-radius: 10px;
+      background: var(--surface);
+      border-color: var(--border);
+      color: var(--text);
     }
 
     .mini-btn.done-active {
-      border-color: rgba(34, 197, 94, 0.7);
-      color: #86efac;
+      background: var(--ok);
+      border-color: var(--ok);
+      color: #ffffff;
     }
 
     .meal-servings-label {
       font-size: 12px;
-      font-weight: 600;
-      min-width: 56px;
+      font-weight: 700;
+      color: var(--muted);
+      min-width: 58px;
       text-align: center;
     }
 
     .meal-del {
-      border-color: rgba(252, 165, 165, 0.45);
-      color: #fca5a5;
+      border-color: #fca5a5;
+      color: var(--danger);
+      background: #fff5f5;
     }
 
     .recipe-card {
-      background: var(--surface-2);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 14px;
       margin-bottom: 10px;
       cursor: pointer;
+      box-shadow: var(--shadow-card);
     }
 
     .recipe-card:hover, .recipe-card.selected {
@@ -364,12 +445,12 @@
       border-radius: 10px;
       margin-bottom: 10px;
       display: block;
-      background: var(--surface);
+      background: var(--surface-2);
     }
 
     .detail-hero {
       width: 100%;
-      max-height: 240px;
+      max-height: 230px;
       object-fit: cover;
       border-radius: 12px;
       margin-bottom: 12px;
@@ -380,6 +461,7 @@
     .recipe-name {
       font-size: 16px;
       font-weight: 700;
+      color: var(--text);
     }
 
     .recipe-sub {
@@ -415,18 +497,19 @@
 
     .star-btn.active {
       color: var(--star);
-      border-color: rgba(250, 204, 21, 0.55);
-      background: rgba(250, 204, 21, 0.12);
+      border-color: #fcd34d;
+      background: var(--star-soft);
     }
 
     .detail-box {
       background: var(--surface-2);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 12px;
       white-space: pre-line;
       font-family: inherit;
       font-size: 15px;
+      color: var(--text);
       margin: 6px 0 12px 0;
     }
 
@@ -434,13 +517,25 @@
       line-height: 1.65;
     }
 
-    /* Rezept-Overlay / Modal */
+    .edit-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .edit-box.open {
+      display: block;
+    }
+
     .modal-backdrop {
       position: fixed;
       inset: 0;
       z-index: 60;
-      background: rgba(6, 8, 12, 0.82);
-      backdrop-filter: blur(6px);
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
       display: none;
       align-items: flex-end;
       justify-content: center;
@@ -458,11 +553,11 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-bottom: none;
-      border-radius: 18px 18px 0 0;
+      border-radius: 20px 20px 0 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.55);
+      box-shadow: var(--shadow-modal);
     }
 
     @media (min-width: 640px) {
@@ -473,7 +568,7 @@
       .modal-sheet {
         max-height: 88dvh;
         border-bottom: 1px solid var(--border);
-        border-radius: 16px;
+        border-radius: 18px;
       }
     }
 
@@ -481,7 +576,7 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       padding: 14px 16px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -503,8 +598,9 @@
       padding: 0;
       font-size: 22px;
       line-height: 1;
-      border-radius: 10px;
+      border-radius: 12px;
       background: var(--surface-2);
+      color: var(--text);
       flex-shrink: 0;
     }
 
@@ -552,8 +648,8 @@
     }
 
     .nav-btn.active {
-      color: #93c5fd;
-      background: rgba(59, 130, 246, 0.12);
+      color: var(--accent);
+      background: var(--accent-soft);
     }
 
     @media (min-width: 768px) {
@@ -565,11 +661,12 @@
         padding: 6px 14px;
         font-size: 14px;
         background: var(--surface-2);
+        color: var(--text);
       }
       .tab-btn.active {
         background: var(--accent);
         border-color: var(--accent);
-        color: #fff;
+        color: #ffffff;
       }
       .plan-grid {
         display: grid;
@@ -659,6 +756,15 @@
             </select>
           </div>
           <div>
+            <label for="sortSelect">Sortierung</label>
+            <select id="sortSelect">
+              <option value="default">Standard</option>
+              <option value="ratingDesc">Sterne (hoch → niedrig)</option>
+              <option value="timeAsc">Zeit (kurz → lang)</option>
+              <option value="lastEatenDesc">Zuletzt gekocht</option>
+            </select>
+          </div>
+          <div>
             <button type="button" id="randomRecipeBtn" class="btn-ghost" style="width:100%;min-height:46px;">Zufall</button>
           </div>
         </div>
@@ -702,40 +808,82 @@
           <h2 id="detailTitle" class="modal-title"></h2>
           <div id="detailMeta" class="recipe-sub"></div>
         </div>
+        <button type="button" id="editToggleBtn" class="btn-ghost">Bearbeiten</button>
         <button type="button" id="closeDetailBtn" class="modal-close-btn" aria-label="Schließen">×</button>
       </div>
 
       <div id="modalBody" class="modal-body">
         <img id="detailImage" class="detail-hero" alt="Rezeptbild" />
 
-        <div>
-          <label>Bewertung</label>
-          <div id="ratingPicker" class="stars-picker"></div>
-        </div>
-
-        <div class="stack" style="margin-top:12px;">
-          <div class="row-split">
-            <div style="flex:1;">
-              <label for="planDate">Datum</label>
-              <input type="date" id="planDate" />
+        <div id="editForm" class="edit-box">
+          <div class="stack">
+            <div>
+              <label for="editTitle">Titel</label>
+              <input type="text" id="editTitle" />
+            </div>
+            <div class="row-split">
+              <div style="flex:1;">
+                <label for="editUnit">Einheit</label>
+                <select id="editUnit">
+                  <option value="Port.">Portionen (Port.)</option>
+                  <option value="Ganzes">Ganzes Gericht (Ganzes)</option>
+                  <option value="Stücke">Stücke</option>
+                </select>
+              </div>
+              <div>
+                <label for="editServings">Basis-Menge</label>
+                <input type="number" id="editServings" class="num-input" min="0.5" max="100" step="0.5" />
+              </div>
+              <div>
+                <label for="editDuration">Minuten</label>
+                <input type="number" id="editDuration" class="num-input" min="0" max="999" step="1" />
+              </div>
             </div>
             <div>
-              <label id="planServingsLabel" for="planServings">Menge</label>
-              <input type="number" id="planServings" class="num-input" min="0.5" max="100" step="0.5" value="1" />
+              <label for="editIngredients">Zutaten (eine pro Zeile)</label>
+              <textarea id="editIngredients"></textarea>
+            </div>
+            <div>
+              <label for="editSteps">Zubereitung</label>
+              <textarea id="editSteps"></textarea>
+            </div>
+            <div class="row-split">
+              <button type="button" id="saveEditBtn" class="btn-primary" style="flex:1;">Änderungen speichern</button>
+              <button type="button" id="cancelEditBtn" class="btn-ghost">Abbrechen</button>
             </div>
           </div>
-          <button type="button" id="planSaveBtn" class="btn-primary">In Essensplan eintragen</button>
         </div>
 
-        <div class="recipe-sub" style="margin-top:14px;"><strong>Zutaten</strong></div>
-        <div id="detailIngredients" class="detail-box"></div>
+        <div id="viewSection">
+          <div>
+            <label>Bewertung</label>
+            <div id="ratingPicker" class="stars-picker"></div>
+          </div>
 
-        <div class="recipe-sub"><strong>Zubereitung</strong></div>
-        <div id="detailSteps" class="detail-box steps-box"></div>
+          <div class="stack" style="margin-top:12px;">
+            <div class="row-split">
+              <div style="flex:1;">
+                <label for="planDate">Datum</label>
+                <input type="date" id="planDate" />
+              </div>
+              <div>
+                <label id="planServingsLabel" for="planServings">Menge</label>
+                <input type="number" id="planServings" class="num-input" min="0.5" max="100" step="0.5" value="1" />
+              </div>
+            </div>
+            <button type="button" id="planSaveBtn" class="btn-primary">In Essensplan eintragen</button>
+          </div>
 
-        <div class="modal-footer-actions">
-          <a id="detailUrl" href="#" target="_blank" rel="noopener" style="color:#93c5fd;font-size:14px;">Originalrezept öffnen</a>
-          <button type="button" id="deleteBtn" class="btn-danger">Rezept löschen</button>
+          <div class="recipe-sub" style="margin-top:14px;"><strong>Zutaten</strong></div>
+          <div id="detailIngredients" class="detail-box"></div>
+
+          <div class="recipe-sub"><strong>Zubereitung</strong></div>
+          <div id="detailSteps" class="detail-box steps-box"></div>
+
+          <div class="modal-footer-actions">
+            <a id="detailUrl" href="#" target="_blank" rel="noopener" style="color:var(--accent);font-size:14px;font-weight:600;">Originalrezept öffnen</a>
+            <button type="button" id="deleteBtn" class="btn-danger">Rezept löschen</button>
+          </div>
         </div>
       </div>
     </div>
@@ -755,6 +903,7 @@
     let activeServingsOverride = null;
     let preparedImageData = null;
     let modalHistoryPushed = false;
+    let isEditingRecipe = false;
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -765,14 +914,31 @@
     function setSyncState(text, mode = '') {
       const el = document.getElementById('syncStamp');
       el.textContent = text;
+      el.title = text;
       el.className = 'sync-stamp' + (mode ? ' ' + mode : '');
     }
 
-    function markUpdatedNow() {
+    function classifyErrorHint(err) {
+      const msg = String((err && err.message) || err || '').toLowerCase();
+      if (!navigator.onLine || msg.indexOf('failed to fetch') !== -1 || msg.indexOf('networkerror') !== -1) {
+        return 'Netzwerkfehler';
+      }
+      if (msg.indexOf('gemini') !== -1 || msg.indexOf('api') !== -1) {
+        return 'API-Fehler';
+      }
+      if (msg.indexOf('http ') !== -1) {
+        const m = msg.match(/http\s*(\d{3})/i);
+        return m ? `HTTP ${m[1]}` : 'Serverfehler';
+      }
+      return 'Speicherfehler';
+    }
+
+    function markUpdatedNow(customNote = '') {
       const now = new Date();
       const dateStr = now.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
       const timeStr = now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
-      setSyncState(`${dateStr}, ${timeStr}`, '');
+      const text = customNote ? `${customNote} • ${timeStr}` : `${dateStr}, ${timeStr}`;
+      setSyncState(text, customNote ? 'ok' : '');
     }
 
     function setBusy(busy) {
@@ -783,6 +949,7 @@
       document.getElementById('planSaveBtn').disabled = busy;
       document.getElementById('deleteBtn').disabled = busy;
       document.getElementById('randomRecipeBtn').disabled = busy;
+      document.getElementById('saveEditBtn').disabled = busy;
     }
 
     async function apiGetData() {
@@ -867,11 +1034,15 @@
 
     function compressImageFile(file, maxSide = 1400, quality = 0.82) {
       return new Promise((resolve, reject) => {
+        if (file.size > 20 * 1024 * 1024) {
+          reject(new Error('Foto zu groß'));
+          return;
+        }
         const reader = new FileReader();
-        reader.onerror = () => reject(new Error('Bild konnte nicht gelesen werden.'));
+        reader.onerror = () => reject(new Error('Bildfehler'));
         reader.onload = () => {
           const img = new Image();
-          img.onerror = () => reject(new Error('Ungültiges Bildformat.'));
+          img.onerror = () => reject(new Error('Bildformat'));
           img.onload = () => {
             let w = img.width;
             let h = img.height;
@@ -915,19 +1086,19 @@
       }
 
       try {
-        setSyncState('Bild wird vorbereitet...', 'busy');
+        setSyncState('Bild prüfe...', 'busy');
         preparedImageData = await compressImageFile(file);
         preview.src = preparedImageData.dataUrl;
         preview.style.display = 'block';
-        setSyncState('Foto bereit', '');
+        setSyncState('Foto bereit', 'ok');
       } catch (err) {
-        setSyncState('Bildfehler', 'err');
+        setSyncState(err.message === 'Foto zu groß' ? 'Foto zu groß' : 'Bildfehler', 'err');
       }
     });
 
     async function patchPlanEntry(planId, patch) {
       setBusy(true);
-      setSyncState('Lädt...', 'busy');
+      setSyncState('Speichere...', 'busy');
       try {
         state = await apiPostAction({
           action: 'updatePlanEntry',
@@ -938,7 +1109,7 @@
         renderPlan();
         markUpdatedNow();
       } catch (err) {
-        setSyncState('Fehler', 'err');
+        setSyncState(classifyErrorHint(err), 'err');
       } finally {
         setBusy(false);
       }
@@ -988,7 +1159,10 @@
             const currentAmt = Number(p.servings || 1);
 
             const row = document.createElement('div');
-            row.className = 'meal-row' + (p.done ? ' done' : '');
+            row.className = 'meal-row' + (!hasRecipe ? ' custom-meal' : '') + (p.done ? ' done' : '');
+
+            const titleWrap = document.createElement('div');
+            titleWrap.className = 'meal-title-wrap';
 
             const title = document.createElement('div');
             title.className = 'meal-title' + (hasRecipe ? ' clickable' : '');
@@ -997,6 +1171,14 @@
               title.addEventListener('click', () => {
                 openRecipeModal(p.recipeId, currentAmt);
               });
+            }
+            titleWrap.appendChild(title);
+
+            if (!hasRecipe) {
+              const badge = document.createElement('span');
+              badge.className = 'custom-badge';
+              badge.textContent = 'Freitext';
+              titleWrap.appendChild(badge);
             }
 
             const controls = document.createElement('div');
@@ -1015,7 +1197,7 @@
 
             const servLabel = document.createElement('span');
             servLabel.className = 'meal-servings-label';
-            servLabel.textContent = hasRecipe ? `${formatAmount(currentAmt)} ${unit}` : 'Freitext';
+            servLabel.textContent = `${formatAmount(currentAmt)} ${unit}`;
 
             const plusBtn = document.createElement('button');
             plusBtn.type = 'button';
@@ -1046,13 +1228,13 @@
             del.addEventListener('click', async ev => {
               ev.stopPropagation();
               setBusy(true);
-              setSyncState('Lädt...', 'busy');
+              setSyncState('Lösche...', 'busy');
               try {
                 state = await apiPostAction({ action: 'removePlan', planId: p.planId });
                 renderPlan();
-                markUpdatedNow();
+                markUpdatedNow('Gelöscht');
               } catch (err) {
-                setSyncState('Fehler', 'err');
+                setSyncState(classifyErrorHint(err), 'err');
               } finally {
                 setBusy(false);
               }
@@ -1064,7 +1246,7 @@
             controls.appendChild(doneBtn);
             controls.appendChild(del);
 
-            row.appendChild(title);
+            row.appendChild(titleWrap);
             row.appendChild(controls);
             card.appendChild(row);
           });
@@ -1089,18 +1271,37 @@
       return dur > 0 && dur <= maxMin;
     }
 
+    function sortRecipesList(list, sortVal) {
+      const copy = list.slice();
+      if (sortVal === 'ratingDesc') {
+        copy.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0) || a.title.localeCompare(b.title, 'de'));
+      } else if (sortVal === 'timeAsc') {
+        copy.sort((a, b) => {
+          const da = Number(a.durationMin || 0) || 9999;
+          const db = Number(b.durationMin || 0) || 9999;
+          return da - db || a.title.localeCompare(b.title, 'de');
+        });
+      } else if (sortVal === 'lastEatenDesc') {
+        copy.sort((a, b) => String(b.lastEaten || '').localeCompare(String(a.lastEaten || '')) || a.title.localeCompare(b.title, 'de'));
+      }
+      return copy;
+    }
+
     function getFilteredRecipes() {
       const query = (document.getElementById('recipeSearch').value || '').trim().toLowerCase();
       const filterVal = document.getElementById('starFilter').value || 'all';
       const timeVal = document.getElementById('timeFilter').value || 'all';
+      const sortVal = document.getElementById('sortSelect').value || 'default';
 
-      return state.recipes.filter(r => {
+      const filtered = state.recipes.filter(r => {
         if (!matchesStarFilter(r.rating, filterVal)) return false;
         if (!matchesTimeFilter(r.durationMin, timeVal)) return false;
         if (!query) return true;
         const hay = `${r.title} ${r.ingredients}`.toLowerCase();
         return hay.indexOf(query) !== -1;
       });
+
+      return sortRecipesList(filtered, sortVal);
     }
 
     function renderRecipes() {
@@ -1149,7 +1350,35 @@
       });
     }
 
+    function setEditMode(openEdit) {
+      isEditingRecipe = Boolean(openEdit);
+      const r = state.recipes.find(item => item.id === selectedRecipeId);
+      const editForm = document.getElementById('editForm');
+      const viewSection = document.getElementById('viewSection');
+      const editBtn = document.getElementById('editToggleBtn');
+
+      if (isEditingRecipe && r) {
+        document.getElementById('editTitle').value = r.title || '';
+        document.getElementById('editUnit').value = r.unitLabel || 'Port.';
+        document.getElementById('editServings').value = Number(r.servings || 1);
+        document.getElementById('editDuration').value = Number(r.durationMin || 0);
+        document.getElementById('editIngredients').value = r.ingredients || '';
+        document.getElementById('editSteps').value = r.steps || '';
+        editForm.classList.add('open');
+        viewSection.style.display = 'none';
+        editBtn.textContent = 'Ansicht';
+      } else {
+        editForm.classList.remove('open');
+        viewSection.style.display = 'block';
+        editBtn.textContent = 'Bearbeiten';
+      }
+    }
+
     function hideRecipeModalDom() {
+      isEditingRecipe = false;
+      document.getElementById('editForm').classList.remove('open');
+      document.getElementById('viewSection').style.display = 'block';
+      document.getElementById('editToggleBtn').textContent = 'Bearbeiten';
       selectedRecipeId = null;
       activeServingsOverride = null;
       document.getElementById('recipeModal').classList.remove('open');
@@ -1185,6 +1414,49 @@
       }
     });
 
+    document.getElementById('editToggleBtn').addEventListener('click', () => {
+      setEditMode(!isEditingRecipe);
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+      setEditMode(false);
+    });
+
+    document.getElementById('saveEditBtn').addEventListener('click', async () => {
+      if (!selectedRecipeId) return;
+      const title = document.getElementById('editTitle').value.trim();
+      if (!title) {
+        setSyncState('Titel fehlt', 'err');
+        return;
+      }
+
+      setBusy(true);
+      setSyncState('Speichere...', 'busy');
+      try {
+        state = await apiPostAction({
+          action: 'updateRecipe',
+          recipeId: selectedRecipeId,
+          recipe: {
+            title,
+            unitLabel: document.getElementById('editUnit').value,
+            servings: document.getElementById('editServings').value,
+            durationMin: document.getElementById('editDuration').value,
+            ingredients: document.getElementById('editIngredients').value,
+            steps: document.getElementById('editSteps').value
+          }
+        });
+        setEditMode(false);
+        populateRecipeModal(selectedRecipeId, null);
+        renderPlan();
+        renderRecipes();
+        markUpdatedNow('Gespeichert');
+      } catch (err) {
+        setSyncState(classifyErrorHint(err), 'err');
+      } finally {
+        setBusy(false);
+      }
+    });
+
     function renderRatingPicker(currentRating) {
       const picker = document.getElementById('ratingPicker');
       picker.innerHTML = '';
@@ -1200,7 +1472,7 @@
           if (!selectedRecipeId) return;
           const nextRating = activeVal === s ? 0 : s;
           setBusy(true);
-          setSyncState('Lädt...', 'busy');
+          setSyncState('Speichere...', 'busy');
           try {
             state = await apiPostAction({
               action: 'setRating',
@@ -1211,7 +1483,7 @@
             renderRecipes();
             markUpdatedNow();
           } catch (err) {
-            setSyncState('Fehler', 'err');
+            setSyncState(classifyErrorHint(err), 'err');
           } finally {
             setBusy(false);
           }
@@ -1276,6 +1548,7 @@
     function openRecipeModal(id, customServings = null) {
       if (!populateRecipeModal(id, customServings)) return;
 
+      setEditMode(false);
       const modal = document.getElementById('recipeModal');
       const wasOpen = modal.classList.contains('open');
       modal.classList.add('open');
@@ -1293,6 +1566,7 @@
     document.getElementById('recipeSearch').addEventListener('input', renderRecipes);
     document.getElementById('starFilter').addEventListener('change', renderRecipes);
     document.getElementById('timeFilter').addEventListener('change', renderRecipes);
+    document.getElementById('sortSelect').addEventListener('change', renderRecipes);
 
     document.getElementById('randomRecipeBtn').addEventListener('click', () => {
       const pool = getFilteredRecipes();
@@ -1310,7 +1584,7 @@
       }
 
       setBusy(true);
-      setSyncState('Lädt...', 'busy');
+      setSyncState('Trage ein...', 'busy');
       try {
         state = await apiPostAction({
           action: 'addCustomPlan',
@@ -1319,9 +1593,9 @@
         });
         document.getElementById('customPlanTitle').value = '';
         renderPlan();
-        markUpdatedNow();
+        markUpdatedNow('Eingetragen');
       } catch (err) {
-        setSyncState('Fehler', 'err');
+        setSyncState(classifyErrorHint(err), 'err');
       } finally {
         setBusy(false);
       }
@@ -1341,7 +1615,7 @@
         }
         markUpdatedNow();
       } catch (err) {
-        setSyncState('Fehler', 'err');
+        setSyncState(classifyErrorHint(err), 'err');
       } finally {
         setBusy(false);
       }
@@ -1363,10 +1637,10 @@
         document.getElementById('recipeUrl').value = '';
         renderPlan();
         renderRecipes();
-        markUpdatedNow();
+        markUpdatedNow('Gespeichert');
         switchView('recipesView');
       } catch (err) {
-        setSyncState('Fehler', 'err');
+        setSyncState(classifyErrorHint(err), 'err');
       } finally {
         setBusy(false);
       }
@@ -1393,10 +1667,10 @@
         preparedImageData = null;
         renderPlan();
         renderRecipes();
-        markUpdatedNow();
+        markUpdatedNow('Gespeichert');
         switchView('recipesView');
       } catch (err) {
-        setSyncState('Fehler', 'err');
+        setSyncState(classifyErrorHint(err), 'err');
       } finally {
         setBusy(false);
       }
@@ -1408,7 +1682,7 @@
       const servings = document.getElementById('planServings').value;
 
       setBusy(true);
-      setSyncState('Lädt...', 'busy');
+      setSyncState('Plane...', 'busy');
       try {
         state = await apiPostAction({
           action: 'planRecipe',
@@ -1419,10 +1693,10 @@
         renderPlan();
         renderRecipes();
         closeRecipeModal();
-        markUpdatedNow();
+        markUpdatedNow('Geplant');
         switchView('planView');
       } catch (err) {
-        setSyncState('Fehler', 'err');
+        setSyncState(classifyErrorHint(err), 'err');
       } finally {
         setBusy(false);
       }
@@ -1431,15 +1705,15 @@
     document.getElementById('deleteBtn').addEventListener('click', async () => {
       if (!selectedRecipeId) return;
       setBusy(true);
-      setSyncState('Lädt...', 'busy');
+      setSyncState('Lösche...', 'busy');
       try {
         state = await apiPostAction({ action: 'deleteRecipe', recipeId: selectedRecipeId });
         closeRecipeModal();
         renderPlan();
         renderRecipes();
-        markUpdatedNow();
+        markUpdatedNow('Gelöscht');
       } catch (err) {
-        setSyncState('Fehler', 'err');
+        setSyncState(classifyErrorHint(err), 'err');
       } finally {
         setBusy(false);
       }
