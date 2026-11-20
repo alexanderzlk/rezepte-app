@@ -46,6 +46,10 @@
       padding-bottom: calc(var(--nav-h) + 20px);
     }
 
+    body.modal-open {
+      overflow: hidden;
+    }
+
     .topbar {
       position: sticky;
       top: 0;
@@ -127,6 +131,22 @@
       align-items: stretch;
     }
 
+    .custom-plan-bar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    @media (min-width: 640px) {
+      .custom-plan-bar {
+        grid-template-columns: 170px 1fr auto;
+        align-items: end;
+      }
+    }
+
     .filter-bar {
       display: grid;
       grid-template-columns: 1fr;
@@ -161,6 +181,11 @@
 
     input, select { width: 100%; }
 
+    input[type="file"] {
+      padding: 8px;
+      font-size: 14px;
+    }
+
     input.num-input {
       width: 96px;
       min-width: 96px;
@@ -191,6 +216,16 @@
 
     .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
 
+    .btn-secondary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      min-height: 46px;
+      padding: 10px 16px;
+    }
+
+    .btn-secondary:hover:not(:disabled) { background: var(--accent-hover); }
+
     .btn-ghost {
       min-height: 36px;
       padding: 6px 10px;
@@ -205,6 +240,16 @@
       background: rgba(239, 68, 68, 0.14);
       border-color: rgba(239, 68, 68, 0.5);
       color: #fca5a5;
+    }
+
+    .camera-preview {
+      width: 100%;
+      max-height: 220px;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      display: none;
     }
 
     .day-card {
@@ -255,6 +300,9 @@
       flex: 1 1 130px;
       font-size: 15px;
       font-weight: 600;
+    }
+
+    .meal-title.clickable {
       cursor: pointer;
     }
 
@@ -386,6 +434,97 @@
       line-height: 1.65;
     }
 
+    /* Rezept-Overlay / Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(6, 8, 12, 0.82);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 720px;
+      max-height: 92dvh;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 18px 18px 0 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.55);
+    }
+
+    @media (min-width: 640px) {
+      .modal-backdrop {
+        align-items: center;
+        padding: 20px;
+      }
+      .modal-sheet {
+        max-height: 88dvh;
+        border-bottom: 1px solid var(--border);
+        border-radius: 16px;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 2px 0;
+      line-height: 1.3;
+    }
+
+    .modal-close-btn {
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      min-height: 40px;
+      padding: 0;
+      font-size: 22px;
+      line-height: 1;
+      border-radius: 10px;
+      background: var(--surface-2);
+      flex-shrink: 0;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      flex: 1;
+    }
+
+    .modal-footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
     .bottom-nav {
       position: fixed;
       left: 0;
@@ -469,55 +608,26 @@
     <section id="planView" class="view active">
       <div class="card">
         <h2 class="card-heading">Essensplan (nächste 14 Tage)</h2>
+
+        <div class="custom-plan-bar">
+          <div>
+            <label for="customPlanDate">Tag</label>
+            <input type="date" id="customPlanDate" />
+          </div>
+          <div>
+            <label for="customPlanTitle">Eigenes Gericht (nur Titel)</label>
+            <input type="text" id="customPlanTitle" placeholder="z. B. Resteessen, Brötchen, Pizza..." />
+          </div>
+          <div>
+            <button type="button" id="customPlanBtn" class="btn-secondary">Eintragen</button>
+          </div>
+        </div>
+
         <div id="planList" class="plan-grid"></div>
       </div>
     </section>
 
     <section id="recipesView" class="view">
-      <div id="detailCard" class="card" style="display:none;">
-        <div class="row-split" style="justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-          <div>
-            <h2 id="detailTitle" class="card-heading" style="margin-bottom:4px;"></h2>
-            <div id="detailMeta" class="recipe-sub"></div>
-          </div>
-          <div class="row-split" style="gap:6px;">
-            <button type="button" id="closeDetailBtn" class="btn-ghost">Zuklappen</button>
-            <button type="button" id="deleteBtn" class="btn-danger">Löschen</button>
-          </div>
-        </div>
-
-        <img id="detailImage" class="detail-hero" alt="Rezeptbild" />
-
-        <div style="margin-top:8px;">
-          <label>Bewertung</label>
-          <div id="ratingPicker" class="stars-picker"></div>
-        </div>
-
-        <div class="stack" style="margin-top:12px;">
-          <div class="row-split">
-            <div style="flex:1;">
-              <label for="planDate">Datum</label>
-              <input type="date" id="planDate" />
-            </div>
-            <div>
-              <label id="planServingsLabel" for="planServings">Menge</label>
-              <input type="number" id="planServings" class="num-input" min="0.5" max="100" step="0.5" value="1" />
-            </div>
-          </div>
-          <button type="button" id="planSaveBtn" class="btn-primary">In Essensplan eintragen</button>
-        </div>
-
-        <div class="recipe-sub" style="margin-top:14px;"><strong>Zutaten</strong></div>
-        <div id="detailIngredients" class="detail-box"></div>
-
-        <div class="recipe-sub"><strong>Zubereitung</strong></div>
-        <div id="detailSteps" class="detail-box steps-box"></div>
-
-        <div class="recipe-sub">
-          <a id="detailUrl" href="#" target="_blank" rel="noopener" style="color:#93c5fd;">Originalrezept öffnen</a>
-        </div>
-      </div>
-
       <div class="card">
         <h2 class="card-heading">Gespeicherte Rezepte</h2>
         <div class="filter-bar">
@@ -568,8 +678,68 @@
           <button type="button" id="addBtn" class="btn-primary">Analysieren &amp; Speichern</button>
         </div>
       </div>
+
+      <div class="card">
+        <h2 class="card-heading">Rezept per Kamera / Foto</h2>
+        <div class="stack">
+          <div>
+            <label for="recipePhoto">Buchseite aufnehmen oder Bild wählen</label>
+            <input type="file" id="recipePhoto" accept="image/*" capture="environment" />
+          </div>
+          <img id="photoPreview" class="camera-preview" alt="Vorschau Rezeptfoto" />
+          <div class="recipe-sub">Das Buchfoto wird nur zum Auslesen an Gemini geschickt und nicht als eigenes Rezeptbild gespeichert.</div>
+          <button type="button" id="addPhotoBtn" class="btn-primary">Foto auslesen &amp; Speichern</button>
+        </div>
+      </div>
     </section>
   </main>
+
+  <!-- Rezept-Fenster (Modal) -->
+  <div id="recipeModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div style="min-width:0;flex:1;">
+          <h2 id="detailTitle" class="modal-title"></h2>
+          <div id="detailMeta" class="recipe-sub"></div>
+        </div>
+        <button type="button" id="closeDetailBtn" class="modal-close-btn" aria-label="Schließen">×</button>
+      </div>
+
+      <div id="modalBody" class="modal-body">
+        <img id="detailImage" class="detail-hero" alt="Rezeptbild" />
+
+        <div>
+          <label>Bewertung</label>
+          <div id="ratingPicker" class="stars-picker"></div>
+        </div>
+
+        <div class="stack" style="margin-top:12px;">
+          <div class="row-split">
+            <div style="flex:1;">
+              <label for="planDate">Datum</label>
+              <input type="date" id="planDate" />
+            </div>
+            <div>
+              <label id="planServingsLabel" for="planServings">Menge</label>
+              <input type="number" id="planServings" class="num-input" min="0.5" max="100" step="0.5" value="1" />
+            </div>
+          </div>
+          <button type="button" id="planSaveBtn" class="btn-primary">In Essensplan eintragen</button>
+        </div>
+
+        <div class="recipe-sub" style="margin-top:14px;"><strong>Zutaten</strong></div>
+        <div id="detailIngredients" class="detail-box"></div>
+
+        <div class="recipe-sub"><strong>Zubereitung</strong></div>
+        <div id="detailSteps" class="detail-box steps-box"></div>
+
+        <div class="modal-footer-actions">
+          <a id="detailUrl" href="#" target="_blank" rel="noopener" style="color:#93c5fd;font-size:14px;">Originalrezept öffnen</a>
+          <button type="button" id="deleteBtn" class="btn-danger">Rezept löschen</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <nav class="bottom-nav">
     <button type="button" class="nav-btn active" data-view="planView"><span>Plan</span></button>
@@ -583,6 +753,8 @@
     let state = { recipes: [], plan: [] };
     let selectedRecipeId = null;
     let activeServingsOverride = null;
+    let preparedImageData = null;
+    let modalHistoryPushed = false;
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -605,6 +777,8 @@
 
     function setBusy(busy) {
       document.getElementById('addBtn').disabled = busy;
+      document.getElementById('addPhotoBtn').disabled = busy;
+      document.getElementById('customPlanBtn').disabled = busy;
       document.getElementById('refreshBtn').disabled = busy;
       document.getElementById('planSaveBtn').disabled = busy;
       document.getElementById('deleteBtn').disabled = busy;
@@ -691,6 +865,66 @@
       return '★'.repeat(r) + '☆'.repeat(5 - r);
     }
 
+    function compressImageFile(file, maxSide = 1400, quality = 0.82) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Bild konnte nicht gelesen werden.'));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error('Ungültiges Bildformat.'));
+          img.onload = () => {
+            let w = img.width;
+            let h = img.height;
+            if (w > maxSide || h > maxSide) {
+              if (w >= h) {
+                h = Math.round((h * maxSide) / w);
+                w = maxSide;
+              } else {
+                w = Math.round((w * maxSide) / h);
+                h = maxSide;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL('image/jpeg', quality);
+            const base64 = dataUrl.split(',')[1] || '';
+            resolve({
+              dataUrl,
+              imageBase64: base64,
+              mimeType: 'image/jpeg'
+            });
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('recipePhoto').addEventListener('change', async ev => {
+      const file = ev.target.files && ev.target.files[0];
+      const preview = document.getElementById('photoPreview');
+      preparedImageData = null;
+
+      if (!file) {
+        preview.style.display = 'none';
+        preview.removeAttribute('src');
+        return;
+      }
+
+      try {
+        setSyncState('Bild wird vorbereitet...', 'busy');
+        preparedImageData = await compressImageFile(file);
+        preview.src = preparedImageData.dataUrl;
+        preview.style.display = 'block';
+        setSyncState('Foto bereit', '');
+      } catch (err) {
+        setSyncState('Bildfehler', 'err');
+      }
+    });
+
     async function patchPlanEntry(planId, patch) {
       setBusy(true);
       setSyncState('Lädt...', 'busy');
@@ -718,6 +952,10 @@
       today.setHours(0, 0, 0, 0);
       const todayIso = toIsoDate(today);
 
+      if (!document.getElementById('customPlanDate').value) {
+        document.getElementById('customPlanDate').value = todayIso;
+      }
+
       for (let i = 0; i < 14; i++) {
         const d = new Date(today);
         d.setDate(today.getDate() + i);
@@ -744,6 +982,7 @@
           card.appendChild(empty);
         } else {
           entries.forEach(p => {
+            const hasRecipe = Boolean(p.recipeId);
             const unit = p.unitLabel || 'Port.';
             const step = unit === 'Ganzes' ? 0.5 : 1;
             const currentAmt = Number(p.servings || 1);
@@ -752,14 +991,13 @@
             row.className = 'meal-row' + (p.done ? ' done' : '');
 
             const title = document.createElement('div');
-            title.className = 'meal-title';
+            title.className = 'meal-title' + (hasRecipe ? ' clickable' : '');
             title.textContent = p.title;
-            title.addEventListener('click', () => {
-              if (p.recipeId) {
-                openRecipe(p.recipeId, true, currentAmt);
-                switchView('recipesView');
-              }
-            });
+            if (hasRecipe) {
+              title.addEventListener('click', () => {
+                openRecipeModal(p.recipeId, currentAmt);
+              });
+            }
 
             const controls = document.createElement('div');
             controls.className = 'meal-controls';
@@ -777,7 +1015,7 @@
 
             const servLabel = document.createElement('span');
             servLabel.className = 'meal-servings-label';
-            servLabel.textContent = `${formatAmount(currentAmt)} ${unit}`;
+            servLabel.textContent = hasRecipe ? `${formatAmount(currentAmt)} ${unit}` : 'Freitext';
 
             const plusBtn = document.createElement('button');
             plusBtn.type = 'button';
@@ -879,7 +1117,7 @@
         const unit = r.unitLabel || 'Port.';
         const card = document.createElement('div');
         card.className = 'recipe-card' + (r.id === selectedRecipeId ? ' selected' : '');
-        card.addEventListener('click', () => toggleRecipe(r.id));
+        card.addEventListener('click', () => openRecipeModal(r.id, null));
 
         if (r.imageUrl) {
           const img = document.createElement('img');
@@ -911,20 +1149,41 @@
       });
     }
 
-    function closeRecipeDetail() {
+    function hideRecipeModalDom() {
       selectedRecipeId = null;
       activeServingsOverride = null;
-      document.getElementById('detailCard').style.display = 'none';
+      document.getElementById('recipeModal').classList.remove('open');
+      document.body.classList.remove('modal-open');
       renderRecipes();
     }
 
-    function toggleRecipe(id) {
-      if (selectedRecipeId === id && document.getElementById('detailCard').style.display !== 'none') {
-        closeRecipeDetail();
-        return;
+    function closeRecipeModal() {
+      if (!document.getElementById('recipeModal').classList.contains('open')) return;
+      hideRecipeModalDom();
+      if (modalHistoryPushed) {
+        modalHistoryPushed = false;
+        history.back();
       }
-      openRecipe(id, false, null);
     }
+
+    window.addEventListener('popstate', () => {
+      if (document.getElementById('recipeModal').classList.contains('open')) {
+        modalHistoryPushed = false;
+        hideRecipeModalDom();
+      }
+    });
+
+    window.addEventListener('keydown', ev => {
+      if (ev.key === 'Escape' && document.getElementById('recipeModal').classList.contains('open')) {
+        closeRecipeModal();
+      }
+    });
+
+    document.getElementById('recipeModal').addEventListener('click', ev => {
+      if (ev.target === document.getElementById('recipeModal')) {
+        closeRecipeModal();
+      }
+    });
 
     function renderRatingPicker(currentRating) {
       const picker = document.getElementById('ratingPicker');
@@ -948,7 +1207,7 @@
               recipeId: selectedRecipeId,
               rating: nextRating
             });
-            openRecipe(selectedRecipeId, false, activeServingsOverride);
+            populateRecipeModal(selectedRecipeId, activeServingsOverride);
             renderRecipes();
             markUpdatedNow();
           } catch (err) {
@@ -961,9 +1220,10 @@
       }
     }
 
-    function openRecipe(id, scrollTop, customServings = null) {
+    function populateRecipeModal(id, customServings = null) {
       const r = state.recipes.find(item => item.id === id);
-      if (!r) return;
+      if (!r) return false;
+
       selectedRecipeId = r.id;
       activeServingsOverride = customServings ? Number(customServings) : null;
 
@@ -971,7 +1231,6 @@
       const baseAmt = Number(r.servings || 1);
       const shownAmt = activeServingsOverride || baseAmt;
 
-      document.getElementById('detailCard').style.display = 'block';
       document.getElementById('detailTitle').textContent = r.title;
       document.getElementById('detailMeta').textContent =
         `${formatAmount(shownAmt)} ${unit} • ${r.durationMin} Min.` +
@@ -992,7 +1251,15 @@
       document.getElementById('detailIngredients').textContent =
         scaleIngredientsText(r.ingredients, baseAmt, shownAmt);
       document.getElementById('detailSteps').textContent = formatStepsWithSpacers(r.steps);
-      document.getElementById('detailUrl').href = r.url || '#';
+
+      const urlLink = document.getElementById('detailUrl');
+      if (/^https?:\/\//i.test(r.url || '')) {
+        urlLink.href = r.url;
+        urlLink.style.display = 'inline';
+      } else {
+        urlLink.removeAttribute('href');
+        urlLink.style.display = 'none';
+      }
 
       document.getElementById('planServingsLabel').textContent = `Menge (${unit})`;
       const planInput = document.getElementById('planServings');
@@ -1003,13 +1270,26 @@
         document.getElementById('planDate').value = toIsoDate(new Date());
       }
 
+      return true;
+    }
+
+    function openRecipeModal(id, customServings = null) {
+      if (!populateRecipeModal(id, customServings)) return;
+
+      const modal = document.getElementById('recipeModal');
+      const wasOpen = modal.classList.contains('open');
+      modal.classList.add('open');
+      document.body.classList.add('modal-open');
+      document.getElementById('modalBody').scrollTop = 0;
       renderRecipes();
-      if (scrollTop) {
-        document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      if (!wasOpen && !modalHistoryPushed) {
+        history.pushState({ recipeModal: id }, '');
+        modalHistoryPushed = true;
       }
     }
 
-    document.getElementById('closeDetailBtn').addEventListener('click', closeRecipeDetail);
+    document.getElementById('closeDetailBtn').addEventListener('click', closeRecipeModal);
     document.getElementById('recipeSearch').addEventListener('input', renderRecipes);
     document.getElementById('starFilter').addEventListener('change', renderRecipes);
     document.getElementById('timeFilter').addEventListener('change', renderRecipes);
@@ -1018,7 +1298,33 @@
       const pool = getFilteredRecipes();
       if (!pool.length) return;
       const pick = pool[Math.floor(Math.random() * pool.length)];
-      openRecipe(pick.id, true, null);
+      openRecipeModal(pick.id, null);
+    });
+
+    document.getElementById('customPlanBtn').addEventListener('click', async () => {
+      const dateStr = document.getElementById('customPlanDate').value;
+      const title = document.getElementById('customPlanTitle').value.trim();
+      if (!title) {
+        setSyncState('Titel fehlt', 'err');
+        return;
+      }
+
+      setBusy(true);
+      setSyncState('Lädt...', 'busy');
+      try {
+        state = await apiPostAction({
+          action: 'addCustomPlan',
+          dateStr,
+          title
+        });
+        document.getElementById('customPlanTitle').value = '';
+        renderPlan();
+        markUpdatedNow();
+      } catch (err) {
+        setSyncState('Fehler', 'err');
+      } finally {
+        setBusy(false);
+      }
     });
 
     async function loadData() {
@@ -1029,9 +1335,9 @@
         renderPlan();
         renderRecipes();
         if (selectedRecipeId && state.recipes.some(r => r.id === selectedRecipeId)) {
-          openRecipe(selectedRecipeId, false, activeServingsOverride);
-        } else {
-          document.getElementById('detailCard').style.display = 'none';
+          populateRecipeModal(selectedRecipeId, activeServingsOverride);
+        } else if (document.getElementById('recipeModal').classList.contains('open')) {
+          closeRecipeModal();
         }
         markUpdatedNow();
       } catch (err) {
@@ -1066,6 +1372,36 @@
       }
     });
 
+    document.getElementById('addPhotoBtn').addEventListener('click', async () => {
+      if (!preparedImageData || !preparedImageData.imageBase64) {
+        setSyncState('Foto fehlt', 'err');
+        return;
+      }
+
+      setBusy(true);
+      setSyncState('Lese Foto...', 'busy');
+      try {
+        state = await apiPostAction({
+          action: 'addRecipeFromImage',
+          imageBase64: preparedImageData.imageBase64,
+          mimeType: preparedImageData.mimeType
+        });
+        document.getElementById('recipePhoto').value = '';
+        const preview = document.getElementById('photoPreview');
+        preview.style.display = 'none';
+        preview.removeAttribute('src');
+        preparedImageData = null;
+        renderPlan();
+        renderRecipes();
+        markUpdatedNow();
+        switchView('recipesView');
+      } catch (err) {
+        setSyncState('Fehler', 'err');
+      } finally {
+        setBusy(false);
+      }
+    });
+
     document.getElementById('planSaveBtn').addEventListener('click', async () => {
       if (!selectedRecipeId) return;
       const dateStr = document.getElementById('planDate').value;
@@ -1082,7 +1418,7 @@
         });
         renderPlan();
         renderRecipes();
-        openRecipe(selectedRecipeId, false, null);
+        closeRecipeModal();
         markUpdatedNow();
         switchView('planView');
       } catch (err) {
@@ -1098,7 +1434,7 @@
       setSyncState('Lädt...', 'busy');
       try {
         state = await apiPostAction({ action: 'deleteRecipe', recipeId: selectedRecipeId });
-        closeRecipeDetail();
+        closeRecipeModal();
         renderPlan();
         renderRecipes();
         markUpdatedNow();
