@@ -32,7 +32,7 @@
       --shadow-btn: 0 2px 6px rgba(15, 23, 42, 0.06);
       --shadow-btn-accent: 0 4px 12px rgba(29, 78, 216, 0.24);
       --shadow-modal: 0 16px 40px rgba(15, 23, 42, 0.24), 0 4px 12px rgba(15, 23, 42, 0.08);
-      --shadow-dock: 0 12px 30px rgba(15, 23, 42, 0.14), 0 3px 8px rgba(15, 23, 42, 0.07), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+      --shadow-dock: 0 12px 32px rgba(15, 23, 42, 0.16), 0 3px 10px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     }
 
     * {
@@ -54,7 +54,7 @@
     }
 
     body {
-      padding-bottom: calc(var(--nav-h) + 36px);
+      padding-bottom: calc(var(--nav-h) + 38px);
     }
 
     body.modal-open {
@@ -70,8 +70,9 @@
       justify-content: space-between;
       gap: 10px;
       padding: 12px 16px;
-      background: rgba(248, 250, 252, 0.92);
-      backdrop-filter: blur(12px);
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
       box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     }
@@ -667,7 +668,7 @@
       border-top: 1px solid var(--border);
     }
 
-    /* Schwebende Glas-Pill-Menüleiste unten */
+    /* Schwebende transparente Glas-Pill-Menüleiste unten */
     .floating-nav-wrap {
       position: fixed;
       left: 0;
@@ -690,10 +691,10 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 4px;
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(18px) saturate(150%);
-      -webkit-backdrop-filter: blur(18px) saturate(150%);
-      border: 1px solid rgba(255, 255, 255, 0.75);
+      background: rgba(255, 255, 255, 0.38);
+      backdrop-filter: blur(22px) saturate(170%);
+      -webkit-backdrop-filter: blur(22px) saturate(170%);
+      border: 1px solid rgba(255, 255, 255, 0.65);
       box-shadow: var(--shadow-dock);
     }
 
@@ -704,7 +705,7 @@
       border: none;
       border-radius: 999px;
       background: transparent;
-      color: var(--muted);
+      color: var(--text);
       font-size: 13px;
       font-weight: 700;
       gap: 6px;
@@ -720,7 +721,7 @@
     .nav-pill-btn.active {
       background: var(--accent);
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25);
     }
 
     @media (min-width: 768px) {
@@ -997,6 +998,7 @@
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbyI8ZYz6yJe2Ubay1enh2lAbuQkS8f78T7vE7ZnXrm3yYLjgE1QNyjBV_Zu3aW7sIE/exec';
+    const APP_TOKEN = 'rzp-7f92a4c8e1b630d5';
 
     let state = { recipes: [], plan: [] };
     let selectedRecipeId = null;
@@ -1022,6 +1024,9 @@
       const msg = String((err && err.message) || err || '').toLowerCase();
       if (!navigator.onLine || msg.indexOf('failed to fetch') !== -1 || msg.indexOf('networkerror') !== -1) {
         return 'Netzwerkfehler';
+      }
+      if (msg.indexOf('autorisiert') !== -1 || msg.indexOf('token') !== -1) {
+        return 'Token-Fehler';
       }
       if (msg.indexOf('gemini') !== -1 || msg.indexOf('api') !== -1) {
         return 'API-Fehler';
@@ -1055,16 +1060,21 @@
 
     async function apiGetData() {
       const sep = API_URL.indexOf('?') === -1 ? '?' : '&';
-      const res = await fetch(`${API_URL}${sep}action=getData`);
+      const url = `${API_URL}${sep}action=getData&token=${encodeURIComponent(APP_TOKEN)}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      return await res.json();
+      const json = await res.json();
+      if (json && json.ok === false) {
+        throw new Error(json.error || 'Daten konnten nicht geladen werden.');
+      }
+      return json;
     }
 
     async function apiPostAction(payload) {
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(Object.assign({}, payload, { token: APP_TOKEN }))
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
