@@ -164,6 +164,13 @@
       margin-top: 12px;
     }
 
+    .photo-picker-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
     .section-title {
       margin: 0 0 12px;
       font-size: 1.05rem;
@@ -1089,7 +1096,6 @@
         <div class="glass-card" style="margin-bottom: 0;">
           <div class="home-block-header">
             <h2 class="home-block-title">Schnelleintrag</h2>
-            <button class="btn-soft btn-sm" type="button" id="homeBrowseRecipesBtn">Rezepte durchsuchen</button>
           </div>
           <form id="customPlanForm">
             <div class="grid-2">
@@ -1104,6 +1110,7 @@
             </div>
             <div class="home-actions-row">
               <button class="btn-primary" type="submit" id="customPlanSubmit">Eintragen</button>
+              <button class="btn-soft" type="button" id="homeBrowseRecipesBtn">Rezepte durchsuchen</button>
             </div>
           </form>
         </div>
@@ -1177,7 +1184,7 @@
         <form id="urlImportForm">
           <div class="field">
             <label for="recipeUrlInput">Rezept-URL</label>
-            <input type="url" id="recipeUrlInput" placeholder="[https://www.chefkoch.de/](https://www.chefkoch.de/)..." required />
+            <input type="url" id="recipeUrlInput" placeholder="https://www.chefkoch.de/..." required />
           </div>
           <button class="btn-primary" type="submit" id="urlImportSubmit">Rezept aus Link importieren</button>
           <div class="hint">Liest Titel, Zutaten, Schritte, Dauer, Tags und Bild automatisch aus.</div>
@@ -1188,8 +1195,13 @@
         <h2 class="section-title">Rezept-Foto(s) auslesen</h2>
         <form id="imageImportForm">
           <div class="field">
-            <label for="recipeImageInput">Foto(s) einer oder mehrerer Rezeptseiten aufnehmen/wählen</label>
-            <input type="file" id="recipeImageInput" accept="image/*" capture="environment" multiple />
+            <label>Kamera oder Galerie / Dateien wählen</label>
+            <div class="photo-picker-row">
+              <button class="btn-soft btn-sm" type="button" id="takeCameraPhotoBtn">📷 Foto aufnehmen</button>
+              <button class="btn-soft btn-sm" type="button" id="pickGalleryPhotoBtn">🖼 Aus Galerie / Dateien</button>
+            </div>
+            <input type="file" id="cameraImageInput" accept="image/*" capture="environment" style="display:none;" />
+            <input type="file" id="recipeImageInput" accept="image/*" multiple style="display:none;" />
             <div class="hint">Du kannst mehrere Fotos nacheinander hinzufügen (z. B. Seite 1 Zutaten, Seite 2 Zubereitung).</div>
             <div id="photoPreviewGrid" class="photo-preview-grid"></div>
           </div>
@@ -1665,15 +1677,11 @@
                 <button class="icon-btn" type="button" title="Löschen" onclick="deletePlanItem('${escapeHtml_(item.planId)}')">🗑</button>
               `;
 
-            const titleClickHandler = isCustom
-              ? `openEditPlanEntryModal('${escapeHtml_(item.planId)}')`
-              : (rec ? `openEditPlanEntryModal('${escapeHtml_(item.planId)}')` : `openEditPlanEntryModal('${escapeHtml_(item.planId)}')`);
-
             return `
               <div class="plan-item ${item.done ? 'done' : ''}">
                 <div class="plan-main">
                   <input type="checkbox" ${item.done ? 'checked' : ''} onchange="togglePlanDone('${escapeHtml_(item.planId)}', this.checked)" aria-label="Erledigt markieren" />
-                  <button type="button" class="plan-name-btn" title="Eintrag bearbeiten" onclick="${titleClickHandler}">
+                  <button type="button" class="plan-name-btn" title="Eintrag bearbeiten" onclick="openEditPlanEntryModal('${escapeHtml_(item.planId)}')">
                     <span class="plan-name">${escapeHtml_(item.title)}</span>
                   </button>
                 </div>
@@ -2443,6 +2451,7 @@
     function clearPendingPhotos_() {
       state.pendingPhotos = [];
       document.getElementById('recipeImageInput').value = '';
+      document.getElementById('cameraImageInput').value = '';
       renderPhotoPreviews_();
     }
 
@@ -2615,6 +2624,13 @@
       });
 
       document.getElementById('urlImportForm').addEventListener('submit', handleUrlImport);
+      document.getElementById('takeCameraPhotoBtn').addEventListener('click', () => {
+        document.getElementById('cameraImageInput').click();
+      });
+      document.getElementById('pickGalleryPhotoBtn').addEventListener('click', () => {
+        document.getElementById('recipeImageInput').click();
+      });
+      document.getElementById('cameraImageInput').addEventListener('change', handleImageFilesSelected_);
       document.getElementById('recipeImageInput').addEventListener('change', handleImageFilesSelected_);
       document.getElementById('clearPhotosBtn').addEventListener('click', clearPendingPhotos_);
       document.getElementById('imageImportForm').addEventListener('submit', handleImageImport);
@@ -2634,7 +2650,6 @@
 
       document.getElementById('closeEditPlanEntryBtn').addEventListener('click', () => closeEditPlanEntryModal());
       document.getElementById('cancelEditPlanEntryBtn').addEventListener('click', () => closeEditPlanEntryModal());
-      document.getElementById('editPlanEntryBackdrop')
       document.getElementById('editPlanEntryModalBackdrop').addEventListener('click', e => {
         if (e.target.id === 'editPlanEntryModalBackdrop') closeEditPlanEntryModal();
       });
