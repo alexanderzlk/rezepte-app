@@ -1493,12 +1493,23 @@
     });
 
     async function apiGetData() {
-      const url = `${API_URL}?action=getData&token=${encodeURIComponent(APP_TOKEN)}&_t=${Date.now()}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.error || 'Fehler beim Laden');
-      return json.data;
-    }
+  const url = `${API_URL}?action=getData&token=${encodeURIComponent(APP_TOKEN)}&_t=${Date.now()}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch (e) {
+    throw new Error('Ungültige Antwort vom Server.');
+  }
+  if (json && json.ok === false) {
+    throw new Error(json.error || 'Fehler beim Laden');
+  }
+  if (json && json.data) {
+    return json.data;
+  }
+  return json;
+}
 
     async function apiPost(action, payloadObj) {
       const res = await fetch(API_URL, {
