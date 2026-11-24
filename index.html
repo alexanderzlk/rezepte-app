@@ -12,7 +12,7 @@
       --bg-top: #f7f9fd;
       --bg-bottom: #e5ecf7;
       --glass-bg: rgba(255, 255, 255, 0.72);
-      --glass-bg-strong: rgba(255, 255, 255, 0.88);
+      --glass-bg-strong: rgba(255, 255, 255, 0.9);
       --glass-bg-subtle: rgba(255, 255, 255, 0.52);
       --glass-border: rgba(255, 255, 255, 0.85);
       --stroke-subtle: rgba(15, 23, 42, 0.08);
@@ -423,10 +423,9 @@
 
     .plan-item {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 9px 11px;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 12px;
       border-radius: var(--radius-sm);
       background: var(--primary-soft);
       border: 1px solid rgba(37, 99, 235, 0.22);
@@ -443,20 +442,11 @@
       margin-bottom: 0;
     }
 
-    .plan-item.done {
-      opacity: 0.62;
-    }
-
-    .plan-item.done .plan-name {
-      text-decoration: line-through;
-    }
-
     .plan-main {
       display: flex;
       align-items: center;
-      gap: 9px;
       min-width: 0;
-      flex: 1;
+      width: 100%;
     }
 
     .plan-name-btn {
@@ -465,16 +455,13 @@
       padding: 2px 4px;
       margin: 0;
       border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.94rem;
+      font-weight: 700;
+      font-size: 0.96rem;
       color: var(--text);
       text-align: left;
       justify-content: flex-start;
+      width: 100%;
       min-width: 0;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
       box-shadow: none;
     }
 
@@ -484,16 +471,23 @@
     }
 
     .plan-name {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      line-height: 1.3;
     }
 
     .plan-controls {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .plan-controls-group {
+      display: flex;
+      align-items: center;
       gap: 5px;
-      flex-shrink: 0;
     }
 
     .servings-badge {
@@ -670,19 +664,67 @@
       box-shadow: var(--shadow-float);
     }
 
+    .recipe-thumb-wrap {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 11px;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+    }
+
+    .recipe-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     .recipes-container.layout-grid2 .recipe-card {
-      padding: 13px;
+      padding: 11px;
       border-radius: var(--radius-lg);
     }
 
+    .recipes-container.layout-grid2 .recipe-thumb-wrap {
+      aspect-ratio: 4 / 3;
+      margin-bottom: 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    .recipes-container.layout-grid2 .recipe-card-top {
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
     .recipes-container.layout-grid2 .recipe-title {
-      font-size: 1rem;
+      font-size: 0.96rem;
+      line-height: 1.25;
+    }
+
+    .recipes-container.layout-grid2 .recipe-meta {
+      font-size: 0.76rem;
+      gap: 6px;
+    }
+
+    .recipes-container.layout-grid2 .star-btn {
+      font-size: 0.95rem;
+      padding: 1px;
+    }
+
+    .recipes-container.layout-grid2 .recipe-tag-badge {
+      font-size: 0.68rem;
+      padding: 2px 6px;
     }
 
     .recipes-container.layout-grid2 .recipe-card-footer {
       flex-direction: column;
       align-items: stretch;
-      gap: 8px;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
     }
 
     .recipes-container.layout-grid2 .recipe-actions {
@@ -692,8 +734,9 @@
     .recipes-container.layout-list .recipe-card {
       flex-direction: row;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
-      padding: 11px 14px;
+      padding: 10px 13px;
       border-radius: var(--radius-lg);
     }
 
@@ -701,34 +744,36 @@
       transform: none;
     }
 
-    .recipes-container.layout-list .recipe-card-top {
-      margin-bottom: 0;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .recipes-container.layout-list .recipe-title {
-      font-size: 0.96rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .recipes-container.layout-list .recipe-meta,
+    .recipes-container.layout-list .recipe-thumb-wrap,
     .recipes-container.layout-list .recipe-tags-row,
     .recipes-container.layout-list .recipe-card-footer {
       display: none;
     }
 
-    .recipe-list-quick-actions {
-      display: none;
+    .recipes-container.layout-list .recipe-card-top {
+      margin-bottom: 0;
+      flex: 1;
+      min-width: 0;
       align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
+      gap: 8px;
     }
 
-    .recipes-container.layout-list .recipe-list-quick-actions {
-      display: flex;
+    .recipes-container.layout-list .recipe-title {
+      font-size: 0.94rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .recipes-container.layout-list .recipe-meta {
+      font-size: 0.78rem;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .recipes-container.layout-list .star-btn {
+      font-size: 0.94rem;
+      padding: 1px;
     }
 
     .recipe-card-top {
@@ -850,6 +895,11 @@
       transition: opacity 0.24s var(--ease-smooth);
     }
 
+    .modal-backdrop.modal-top {
+      align-items: flex-start;
+      padding-top: calc(20px + env(safe-area-inset-top));
+    }
+
     .modal-backdrop.open {
       display: flex;
       opacity: 1;
@@ -870,6 +920,10 @@
       transform: translateY(24px) scale(0.985);
       opacity: 0;
       transition: transform 0.3s var(--ease-spring), opacity 0.22s var(--ease-smooth);
+    }
+
+    .modal-backdrop.modal-top .modal {
+      transform: translateY(-20px) scale(0.985);
     }
 
     .modal-backdrop.open .modal {
@@ -1278,7 +1332,7 @@
   </div>
 
   <!-- MODAL: REZEPT EINPLANEN -->
-  <div class="modal-backdrop" id="planModalBackdrop" aria-hidden="true">
+  <div class="modal-backdrop modal-top" id="planModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="planModalTitle">
       <div class="modal-header">
         <h3 class="modal-title" id="planModalTitle">Rezept einplanen</h3>
@@ -1302,7 +1356,7 @@
   </div>
 
   <!-- MODAL: KALENDEREINTRAG BEARBEITEN -->
-  <div class="modal-backdrop" id="editPlanEntryModalBackdrop" aria-hidden="true">
+  <div class="modal-backdrop modal-top" id="editPlanEntryModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="editPlanEntryTitle">
       <div class="modal-header">
         <h3 class="modal-title" id="editPlanEntryTitle">Eintrag bearbeiten</h3>
@@ -1322,7 +1376,7 @@
   </div>
 
   <!-- MODAL: EINTRAG VERSCHIEBEN / KOPIEREN -->
-  <div class="modal-backdrop" id="moveCopyModalBackdrop" aria-hidden="true">
+  <div class="modal-backdrop modal-top" id="moveCopyModalBackdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="moveCopyModalTitle">
       <div class="modal-header">
         <h3 class="modal-title" id="moveCopyModalTitle">Eintrag verschieben oder kopieren</h3>
@@ -1493,23 +1547,23 @@
     });
 
     async function apiGetData() {
-  const url = `${API_URL}?action=getData&token=${encodeURIComponent(APP_TOKEN)}&_t=${Date.now()}`;
-  const res = await fetch(url);
-  const text = await res.text();
-  let json;
-  try {
-    json = JSON.parse(text);
-  } catch (e) {
-    throw new Error('Ungültige Antwort vom Server.');
-  }
-  if (json && json.ok === false) {
-    throw new Error(json.error || 'Fehler beim Laden');
-  }
-  if (json && json.data) {
-    return json.data;
-  }
-  return json;
-}
+      const url = `${API_URL}?action=getData&token=${encodeURIComponent(APP_TOKEN)}&_t=${Date.now()}`;
+      const res = await fetch(url);
+      const text = await res.text();
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (e) {
+        throw new Error('Ungültige Antwort vom Server.');
+      }
+      if (json && json.ok === false) {
+        throw new Error(json.error || 'Fehler beim Laden');
+      }
+      if (json && json.data) {
+        return json.data;
+      }
+      return json;
+    }
 
     async function apiPost(action, payloadObj) {
       const res = await fetch(API_URL, {
@@ -1677,21 +1731,27 @@
 
             const controlsHtml = isCustom
               ? `
-                <button class="icon-btn" type="button" title="Verschieben / Kopieren" onclick="openMoveCopyModal('${escapeHtml_(item.planId)}')">⇄</button>
-                <button class="icon-btn" type="button" title="Löschen" onclick="deletePlanItem('${escapeHtml_(item.planId)}')">🗑</button>
+                <span class="servings-badge">Eigenes</span>
+                <div class="plan-controls-group">
+                  <button class="icon-btn" type="button" title="Verschieben / Kopieren" onclick="openMoveCopyModal('${escapeHtml_(item.planId)}')">⇄</button>
+                  <button class="icon-btn" type="button" title="Löschen" onclick="deletePlanItem('${escapeHtml_(item.planId)}')">🗑</button>
+                </div>
               `
               : `
-                <button class="icon-btn" type="button" title="Menge verringern" onclick="changePlanServings('${escapeHtml_(item.planId)}', ${Number(item.servings)}, -${step})">−</button>
-                <span class="servings-badge">${escapeHtml_(formatAmountText_(item.servings, unitLabel))}</span>
-                <button class="icon-btn" type="button" title="Menge erhöhen" onclick="changePlanServings('${escapeHtml_(item.planId)}', ${Number(item.servings)}, ${step})">+</button>
-                <button class="icon-btn" type="button" title="Verschieben / Kopieren" onclick="openMoveCopyModal('${escapeHtml_(item.planId)}')">⇄</button>
-                <button class="icon-btn" type="button" title="Löschen" onclick="deletePlanItem('${escapeHtml_(item.planId)}')">🗑</button>
+                <div class="plan-controls-group">
+                  <button class="icon-btn" type="button" title="Menge verringern" onclick="changePlanServings('${escapeHtml_(item.planId)}', ${Number(item.servings)}, -${step})">−</button>
+                  <span class="servings-badge">${escapeHtml_(formatAmountText_(item.servings, unitLabel))}</span>
+                  <button class="icon-btn" type="button" title="Menge erhöhen" onclick="changePlanServings('${escapeHtml_(item.planId)}', ${Number(item.servings)}, ${step})">+</button>
+                </div>
+                <div class="plan-controls-group">
+                  <button class="icon-btn" type="button" title="Verschieben / Kopieren" onclick="openMoveCopyModal('${escapeHtml_(item.planId)}')">⇄</button>
+                  <button class="icon-btn" type="button" title="Löschen" onclick="deletePlanItem('${escapeHtml_(item.planId)}')">🗑</button>
+                </div>
               `;
 
             return `
-              <div class="plan-item ${item.done ? 'done' : ''}">
+              <div class="plan-item">
                 <div class="plan-main">
-                  <input type="checkbox" ${item.done ? 'checked' : ''} onchange="togglePlanDone('${escapeHtml_(item.planId)}', this.checked)" aria-label="Erledigt markieren" />
                   <button type="button" class="plan-name-btn" title="Eintrag bearbeiten" onclick="openEditPlanEntryModal('${escapeHtml_(item.planId)}')">
                     <span class="plan-name">${escapeHtml_(item.title)}</span>
                   </button>
@@ -1855,15 +1915,6 @@
       }
     }
 
-    async function togglePlanDone(planId, done) {
-      try {
-        const data = await apiPost('updatePlanEntry', { planId, done });
-        applyData(data);
-      } catch (err) {
-        showToast_(err.message || 'Status konnte nicht geändert werden');
-      }
-    }
-
     async function deletePlanItem(planId) {
       try {
         const data = await apiPost('removePlan', { planId });
@@ -1973,10 +2024,21 @@
       }
 
       container.innerHTML = list.map(r => {
+        const hasValidImage = r.imageUrl && /^https?:\/\//i.test(r.imageUrl);
+        const thumbHtml = hasValidImage
+          ? `
+            <div class="recipe-thumb-wrap" onclick="openRecipeModal('${escapeHtml_(r.id)}')">
+              <img class="recipe-thumb" src="${escapeHtml_(r.imageUrl)}" alt="${escapeHtml_(r.title)}" loading="lazy" onerror="this.parentElement.style.display='none'" />
+            </div>
+          `
+          : '';
+
         const metaBits = [];
         if (r.durationMin > 0) metaBits.push(`⏱ ${r.durationMin} Min.`);
         metaBits.push(`🍽 ${formatAmountText_(r.servings, r.unitLabel)}`);
-        if (r.lastEaten) metaBits.push(`Zuletzt: ${formatGermanDate_(r.lastEaten)}`);
+        if (state.recipeLayout === 'stack' && r.lastEaten) {
+          metaBits.push(`Zuletzt: ${formatGermanDate_(r.lastEaten)}`);
+        }
 
         const tagsHtml = Array.isArray(r.tags) && r.tags.length
           ? `<div class="recipe-tags-row">${r.tags.map(t => `<span class="recipe-tag-badge">${escapeHtml_(t)}</span>`).join('')}</div>`
@@ -1984,6 +2046,7 @@
 
         return `
           <article class="recipe-card">
+            ${thumbHtml}
             <div class="recipe-card-top">
               <div style="min-width:0; flex:1;">
                 <h3 class="recipe-title" onclick="openRecipeModal('${escapeHtml_(r.id)}')">${escapeHtml_(r.title)}</h3>
@@ -1991,9 +2054,6 @@
                 ${tagsHtml}
               </div>
               ${renderStarsHtml(r.id, r.rating)}
-            </div>
-            <div class="recipe-list-quick-actions">
-              <button class="btn-primary btn-sm" type="button" onclick="event.stopPropagation(); openPlanModal('${escapeHtml_(r.id)}')">Planen</button>
             </div>
             <div class="recipe-card-footer">
               <div class="recipe-actions">
@@ -2225,6 +2285,14 @@
         ? `<div class="recipe-tags-row" style="margin-top:0; margin-bottom:12px;">${recipeTags.map(t => `<span class="recipe-tag-badge">${escapeHtml_(t)}</span>`).join('')}</div>`
         : '';
 
+      const modalImgHtml = rec.imageUrl && /^https?:\/\//i.test(rec.imageUrl)
+        ? `
+          <div class="recipe-thumb-wrap" style="margin-bottom:12px; cursor:default;">
+            <img class="recipe-thumb" src="${escapeHtml_(rec.imageUrl)}" alt="${escapeHtml_(rec.title)}" onerror="this.parentElement.style.display='none'" />
+          </div>
+        `
+        : '';
+
       const notesDisplayHtml = state.modalEditingNotes
         ? `
           <div class="field" style="margin-bottom:8px;">
@@ -2305,6 +2373,7 @@
       }
 
       document.getElementById('modalRecipeContent').innerHTML = `
+        ${modalImgHtml}
         <div class="detail-meta">
           ${rec.durationMin > 0 ? `<span class="pill">⏱ ${rec.durationMin} Min.</span>` : ''}
           <span class="pill">🍽 ${escapeHtml_(formatAmountText_(currentServings, rec.unitLabel))}</span>
