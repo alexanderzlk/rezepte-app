@@ -54,7 +54,7 @@
         linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
       background-attachment: fixed;
       min-height: 100vh;
-      padding-bottom: calc(104px + env(safe-area-inset-bottom));
+      padding-bottom: calc(114px + env(safe-area-inset-bottom));
     }
 
     .app {
@@ -564,7 +564,7 @@
 
     .layout-switcher {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 8px;
       margin-top: 6px;
     }
@@ -629,16 +629,6 @@
       gap: 12px;
     }
 
-    .recipes-container.layout-grid2 {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    @media (max-width: 560px) {
-      .recipes-container.layout-grid2 {
-        grid-template-columns: 1fr;
-      }
-    }
-
     .recipes-container.layout-list {
       grid-template-columns: 1fr;
       gap: 8px;
@@ -680,55 +670,6 @@
       height: 100%;
       object-fit: cover;
       display: block;
-    }
-
-    .recipes-container.layout-grid2 .recipe-card {
-      padding: 11px;
-      border-radius: var(--radius-lg);
-    }
-
-    .recipes-container.layout-grid2 .recipe-thumb-wrap {
-      aspect-ratio: 4 / 3;
-      margin-bottom: 8px;
-      border-radius: var(--radius-sm);
-    }
-
-    .recipes-container.layout-grid2 .recipe-card-top {
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 6px;
-    }
-
-    .recipes-container.layout-grid2 .recipe-title {
-      font-size: 0.96rem;
-      line-height: 1.25;
-    }
-
-    .recipes-container.layout-grid2 .recipe-meta {
-      font-size: 0.76rem;
-      gap: 6px;
-    }
-
-    .recipes-container.layout-grid2 .star-btn {
-      font-size: 0.95rem;
-      padding: 1px;
-    }
-
-    .recipes-container.layout-grid2 .recipe-tag-badge {
-      font-size: 0.68rem;
-      padding: 2px 6px;
-    }
-
-    .recipes-container.layout-grid2 .recipe-card-footer {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 6px;
-      margin-top: 8px;
-      padding-top: 8px;
-    }
-
-    .recipes-container.layout-grid2 .recipe-actions {
-      justify-content: space-between;
     }
 
     .recipes-container.layout-list .recipe-card {
@@ -859,17 +800,17 @@
       border-radius: 999px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      padding: 6px;
+      padding: 9px 8px;
       box-shadow: var(--shadow-float);
       z-index: 40;
     }
 
     .nav-btn {
       border-radius: 999px;
-      padding: 9px 10px;
+      padding: 12px 10px;
       background: transparent;
       color: var(--muted);
-      font-size: 0.88rem;
+      font-size: 0.94rem;
       font-weight: 700;
       box-shadow: none;
     }
@@ -1011,7 +952,7 @@
     .toast {
       position: fixed;
       left: 50%;
-      bottom: calc(84px + env(safe-area-inset-bottom));
+      bottom: calc(92px + env(safe-area-inset-bottom));
       transform: translateX(-50%) translateY(10px);
       background: rgba(17, 24, 39, 0.88);
       backdrop-filter: blur(14px);
@@ -1204,7 +1145,6 @@
               <span class="filter-group-label">Ansicht</span>
               <div class="layout-switcher" role="group" aria-label="Rezept-Ansicht wählen">
                 <button type="button" class="layout-option-btn active" data-layout="stack">Untereinander</button>
-                <button type="button" class="layout-option-btn" data-layout="grid2">2 nebeneinander</button>
                 <button type="button" class="layout-option-btn" data-layout="list">Nur Liste</button>
               </div>
             </div>
@@ -1441,7 +1381,7 @@
     function loadSavedLayout_() {
       try {
         const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
-        if (saved === 'stack' || saved === 'grid2' || saved === 'list') {
+        if (saved === 'stack' || saved === 'list') {
           state.recipeLayout = saved;
         }
       } catch (e) {}
@@ -1650,15 +1590,13 @@
     }
 
     function applyRecipeLayoutMode_(mode) {
-      const valid = (mode === 'stack' || mode === 'grid2' || mode === 'list') ? mode : 'stack';
+      const valid = mode === 'list' ? 'list' : 'stack';
       state.recipeLayout = valid;
       saveLayout_(valid);
 
       const container = document.getElementById('recipesList');
-      container.classList.remove('layout-stack', 'layout-grid2', 'layout-list');
-      if (valid === 'grid2') container.classList.add('layout-grid2');
-      else if (valid === 'list') container.classList.add('layout-list');
-      else container.classList.add('layout-stack');
+      container.classList.remove('layout-list');
+      if (valid === 'list') container.classList.add('layout-list');
 
       document.querySelectorAll('.layout-option-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.layout === valid);
